@@ -1,0 +1,16 @@
+@import './base.css';
+
+* {
+  box-sizing: border-box;
+}
+
+button {
+  border: 1px solid navy;
+  background-color: lightblue;
+  padding: 1rem 0.5rem;
+  cursor: pointer;
+}
+
+.w-100 {
+  width: 100%;
+}
