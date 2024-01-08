@@ -1,52 +1,70 @@
 <template>
     <div class="controller">
-        <button
-            class="w-100"
-            @click="selectPlayerRandomly"
+        <div
+            v-if="props.gameView === IGameViews.floor"
         >
-            Randomizer
-        </button>
-        <div>
-                <h3>Board Display</h3>
-            <label>
-                <input
-                    name="board-display"
-                    type="radio"
-                    v-model="gameSquareStore.displayType"
-                    :value="IBoardDisplay.categories"
-                />
-                Categories
-            </label>
-            <label>
-                <input
-                    name="board-display"
-                    type="radio"
-                    v-model="gameSquareStore.displayType"
-                    :value="IBoardDisplay.players"
-                />
-                Player Names
-            </label>
-            <label>
-                <input
-                    name="board-display"
-                    type="radio"
-                    v-model="gameSquareStore.displayType"
-                    :value="IBoardDisplay.territories"
-                />
-                Territories
-            </label>
-        </div>
-        <div class="battle-data">
-            <h3>Battle Data</h3>
-            <p>Player A: <strong>{{ getPlayer(props.battleInfo.playerAId)?.name }}</strong></p>
-            <p>Player B: <strong>{{ getPlayer(props.battleInfo.playerBId)?.name }}</strong></p>
-            <p>Category: <strong>{{ getCategory(props.battleInfo.categoryId)?.name }}</strong></p>
             <button
-                v-if="isBattleReady"
                 class="w-100"
-                @click="handleAcceptChallenge"
+                @click="selectPlayerRandomly"
             >
-                Accept Challenge
+                Randomizer
+            </button>
+            <div>
+                <h3>Board Display</h3>
+                <label>
+                    <input
+                        name="board-display"
+                        type="radio"
+                        v-model="gameSquareStore.displayType"
+                        :value="IBoardDisplay.categories"
+                    />
+                    Categories
+                </label>
+                <label>
+                    <input
+                        name="board-display"
+                        type="radio"
+                        v-model="gameSquareStore.displayType"
+                        :value="IBoardDisplay.players"
+                    />
+                    Player Names
+                </label>
+                <label>
+                    <input
+                        name="board-display"
+                        type="radio"
+                        v-model="gameSquareStore.displayType"
+                        :value="IBoardDisplay.territories"
+                    />
+                    Territories
+                </label>
+            </div>
+            <div class="battle-data">
+                <h3>Challenge Data</h3>
+                <p>Player A: <strong>{{ getPlayer(props.battleInfo.playerAId)?.name }}</strong></p>
+                <p>Player B: <strong>{{ getPlayer(props.battleInfo.playerBId)?.name }}</strong></p>
+                <p>Category: <strong>{{ getCategory(props.battleInfo.categoryId)?.name }}</strong></p>
+                <button
+                    v-if="isBattleReady"
+                    class="w-100"
+                    @click="onAcceptChallenge"
+                >
+                    Accept Challenge
+                </button>
+                <button
+                    class="w-100"
+                    @click="onClearBattleData"
+                >
+                    Clear Challenge Data
+                </button>
+            </div>
+        </div>
+        <div v-if="props.gameView === IGameViews.battle">
+            <button
+                class="w-100"
+                @click="onCancelBattle"
+            >
+                Cancel Challenge
             </button>
         </div>
     </div>
@@ -54,10 +72,9 @@
 <script setup lang="ts">
 import { usePlayerStore } from '@/stores/playerStore'
 import { useGameSquareStore } from '@/stores/gameSquareStore';
-import { IBoardDisplay, type IBattleData } from '@/types';
+import { IBoardDisplay, type IBattleData, IGameViews } from '@/types';
 import { storeToRefs } from 'pinia';
 import { useCategoryStore } from '@/stores/categoryStore';
-import { emit } from 'process';
 
 const playerStore = usePlayerStore()
 const gameSquareStore = useGameSquareStore()
@@ -74,19 +91,34 @@ const props = defineProps({
     isBattleReady: {
         type: Boolean,
         required: true,
+    },
+    gameView: {
+        type: String as () => IGameViews,
+        required: true,
     }
 })
 
-const emit = defineEmits(['confirmChallenge'])
+const emit = defineEmits(['confirmChallenge', 'cancelBattle'])
 
 const selectPlayerRandomly = () => {
+    onClearBattleData()
     const max = playerStore.players.length
     const index = Math.floor(Math.random() * max)
     playerStore.setSelectedPlayer(playerStore.players[index].id)
 }
 
-const handleAcceptChallenge = () => {
+const onAcceptChallenge = () => {
     emit('confirmChallenge', props.battleInfo)
+}
+
+const onCancelBattle = () => {
+    emit('cancelBattle')
+}
+
+const onClearBattleData = () => {
+    playerStore.setSelectedPlayer('')
+    playerStore.setSelectedChallenger('')
+    categoryStore.setSelectedCategory('')
 }
 
 </script>

@@ -4,12 +4,18 @@
         <MasterController
             :isBattleReady="isBattleReady"
             :battleInfo="battle"
+            :gameView="view"
             @confirmChallenge="handleConfirmChallenge"
+            @cancelBattle="handleCancelBatlle"
         />
         <GameBoard v-if="view === IGameViews.floor" />
         <BattleBoard v-if="view === IGameViews.battle" />
         <ModalPopup v-if="confirmChallengeModal">
-            <ChallengeInfo :battleInfo="battle" />
+            <ChallengeInfo
+                :battleInfo="battle"
+                @cancel="handleChallangeModalCancel"
+                @begin="beginChallenge"
+            />
         </ModalPopup>
         <PlayerBoard />
     </main>
@@ -117,6 +123,19 @@ const setupCategories = async () => {
 const handleConfirmChallenge = (data: IBattleData) => {
     console.log(data) // not used right now - but maybe later
     confirmChallengeModal.value = true
+}
+
+const handleChallangeModalCancel = () => {
+    confirmChallengeModal.value = false
+}
+
+const beginChallenge = () => {
+    handleChallangeModalCancel()
+    view.value = IGameViews.battle
+}
+
+const handleCancelBatlle = () => {
+    view.value = IGameViews.floor
 }
 
 playerStore.$subscribe((mutation, state) => {

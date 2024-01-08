@@ -4,8 +4,8 @@
         <p><strong>{{ getPlayer(props.battleInfo.playerAId)?.name }}</strong></p>
         <p>VS</p>
         <p><strong>{{ getPlayer(props.battleInfo.playerBId)?.name }}</strong></p>
-        <button class="w-100">Cancel</button>
-        <button class="w-100">Start</button>
+        <button class="w-100" @click="onBegin">Start</button>
+        <button class="w-100" @click="onCancel">Cancel</button>
     </div>
 </template>
 <script setup lang="ts">
@@ -26,6 +26,16 @@ const props = defineProps({
         required: true
     }
 })
+
+const emit = defineEmits(['cancel', 'begin'])
+
+const onCancel = () => {
+    emit('cancel')
+}
+
+const onBegin = () => {
+    emit('begin')
+}
 </script>
 <style lang="scss" scoped>
 .challenge-info {

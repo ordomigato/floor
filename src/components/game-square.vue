@@ -91,6 +91,8 @@ const setSelectedChallenger = () => {
     if (playerStore.selectedPlayer) {
         playerStore.setSelectedChallenger(props.squareData.playerId)
         categoryStore.setSelectedCategory(props.squareData.categoryId)
+    } else {
+        playerStore.setSelectedPlayer(props.squareData.playerId)
     }
 }
 
