@@ -8,7 +8,8 @@ export const usePlayerStore = defineStore({
     id: 'player',
     state: () => ({
         players: [] as IPlayer[],
-        selectedPlayer: '', // the square's id
+        selectedPlayer: '', // the player's id
+        selectedChallenger: '', // the player's id
     }),
     getters: {
         data: (state) => state,
@@ -28,6 +29,9 @@ export const usePlayerStore = defineStore({
                 }
             })
             squareStore.setSelectedSquares(ownedSquares)
+        },
+        setSelectedChallenger(payload: string) {
+            this.selectedChallenger = payload
         }
     }
 })

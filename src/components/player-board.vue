@@ -20,6 +20,10 @@ const playerStore = usePlayerStore()
 <style lang="scss" scoped>
 .player-board {
     margin: 1rem;
+    min-width: 250px;
+    h2 {
+        margin-top: 0;
+    }
     .player {
         display: flex;
         margin-bottom: 0.5rem;

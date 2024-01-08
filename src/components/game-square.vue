@@ -5,40 +5,68 @@
             ${isSelected && 'selected'}
             ${isAdjacentSquare && 'adjacent'}
         `"
-        :style="`background-color: ${isSelected && getPlayer(playerStore.selectedPlayer)?.color}`"
+        :style="
+            `background-color: ${backgroundColor}`
+        "
+        @click="setSelectedChallenger"
     >
-        {{ props.cat.id }}
+        <p
+            v-if="squareStore.displayType === IBoardDisplay.categories"
+        >
+            {{ getCategory(squareData.categoryId)?.name }}
+        </p>
+        <p
+            v-if="
+                squareStore.displayType === IBoardDisplay.players
+                || squareStore.displayType === IBoardDisplay.territories    
+            "
+        >
+            {{ getPlayer(squareData.playerId)?.name }}
+        </p>
     </div>
 </template>
 <script lang="ts" setup>
-import type { IGameSquare } from '@/types';
+import { IBoardDisplay, type IGameSquare } from '@/types';
 import { usePlayerStore } from '@/stores/playerStore'
 import { useGameSquareStore } from '@/stores/gameSquareStore'
 import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
+import { useCategoryStore } from '@/stores/categoryStore';
 
 const playerStore = usePlayerStore()
 const squareStore = useGameSquareStore()
+const categoryStore = useCategoryStore()
 
 const { getSquare } = storeToRefs(squareStore)
 const { getPlayer } = storeToRefs(playerStore)
+const { getCategory } = storeToRefs(categoryStore)
 
 const props = defineProps({
-    cat: {
+    squareData: {
         type: Object as () => IGameSquare,
         required: true
     }
 })
 
+const backgroundColor = computed(() => {
+    if (squareStore.displayType === IBoardDisplay.territories) {
+        return getPlayer.value(props.squareData.playerId)?.color
+    }
+    if (isSelected.value) {
+        return getPlayer.value(playerStore.selectedPlayer)?.color
+    }
+    return ''
+})
+
 const isSelected = computed(() => {
-    return playerStore.selectedPlayer === props.cat.playerId
+    return playerStore.selectedPlayer === props.squareData.playerId
 })
 
 const isAdjacentSquare = computed(() => {
     if (!isSelected.value) {
         const adjacentSquares = getAdjacentSquares(
-            props.cat.row,
-            props.cat.col
+            props.squareData.row,
+            props.squareData.col
         )
         return adjacentSquares.some(as => squareStore.selectedSquares.some(ss => ss.id === as))
     }
@@ -59,6 +87,13 @@ const getAdjacentSquares = (row: number, col: number): (string)[] => {
     return filteredData;
 }
 
+const setSelectedChallenger = () => {
+    if (playerStore.selectedPlayer) {
+        playerStore.setSelectedChallenger(props.squareData.playerId)
+        categoryStore.setSelectedCategory(props.squareData.categoryId)
+    }
+}
+
 </script>
 <style lang="scss" scoped>
 .square {
@@ -69,8 +104,10 @@ const getAdjacentSquares = (row: number, col: number): (string)[] => {
     background-color: var(--main-color);
     border: 5px solid var(--main-color);
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    text-align: center;
     &:hover {
         color: #333;
         cursor: pointer;

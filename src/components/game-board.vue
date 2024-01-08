@@ -6,7 +6,7 @@
             :key="i"
         >
             <GameSquare
-                :cat="squareData"
+                :squareData="squareData"
                 v-for="squareData in gameSquares.get(s)"
                 :key="squareData.id"
             />
@@ -36,6 +36,7 @@ const gameSquares: ComputedRef<Map<number, IGameSquare[]>> = computed(() => {
 <style lang="scss" scoped>
 .board {
     padding: 1rem;
+    width: 750px;
     .row {
         display: flex;
         gap: 0.25rem;

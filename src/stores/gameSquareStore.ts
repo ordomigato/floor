@@ -1,4 +1,4 @@
-import type { IGameSquare } from "@/types";
+import { IBoardDisplay, type IGameSquare } from "@/types";
 import { acceptHMRUpdate, defineStore } from "pinia";
 
 export const useGameSquareStore = defineStore({
@@ -6,9 +6,9 @@ export const useGameSquareStore = defineStore({
     state: () => ({
         squares: [] as IGameSquare[],
         selectedSquares: [] as IGameSquare[],
+        displayType: IBoardDisplay.categories as IBoardDisplay,
     }),
     getters: {
-        data: (state) => state,
         getSquare: (state) => {
             return (squareId: string): IGameSquare | undefined => state.squares.find(s => s.id === squareId)
         }
@@ -19,6 +19,9 @@ export const useGameSquareStore = defineStore({
         },
         setSelectedSquares(payload: IGameSquare[]) {
             this.selectedSquares = payload 
+        },
+        setDisplayType(payload: IBoardDisplay) {
+            this.displayType = payload
         }
     }
 })

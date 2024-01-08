@@ -11,6 +11,13 @@ button {
   cursor: pointer;
 }
 
+label {
+  display: flex;
+  input[type="radio"] {
+    margin-right: 0.5rem;
+  }
+}
+
 .w-100 {
   width: 100%;
 }
