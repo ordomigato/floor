@@ -99,12 +99,11 @@ const setSelectedChallenger = () => {
 </script>
 <style lang="scss" scoped>
 .square {
-    --main-color: navy;
     width: 100px;
     height: 100px;
     color: white;
-    background-color: var(--main-color);
-    border: 5px solid var(--main-color);
+    background-color: var(--primary-color-dark);
+    border: 5px solid var(--primary-color-dark);
     display: flex;
     flex-direction: column;
     align-items: center;

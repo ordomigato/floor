@@ -2,14 +2,37 @@
 
 * {
   box-sizing: border-box;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: Arial, Helvetica, sans-serif
+}
+
+:root {
+  --primary-color: #0c4a6e;
+  --primary-color-dark: #082f49;
+  --primary-color-light: #075985;
+  --secondary-color: #5b21b6;
+  --secondary-color-dark: #1e1b4b;
+  --secondary-color-light: #4338ca;
+
+  --font-color-dark: #333;
+}
+
+body {
+  background-color: var(--primary-color);
+  color: white;
 }
 
 button {
-  border: 1px solid navy;
-  background-color: lightblue;
+  border: 1px solid var(--secondary-color-dark);
+  background-color: var(--secondary-color);
   padding: 1rem 0.5rem;
   cursor: pointer;
+  color: white;
+  border-radius: 4px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+}
+
+button:hover {
+  background-color: var(--secondary-color-light);
 }
 
 label {

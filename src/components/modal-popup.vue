@@ -20,10 +20,11 @@
     .modal {
         min-width: 300px;
         max-width: 80%;
-        background-color: white;
+        background-color: var(--primary-color);
         padding: 1rem;
         border-radius: 10px;
         box-shadow: 0 6px 12px black;
+        // color: var(--font-color-dark)
     }
 }
 </style>

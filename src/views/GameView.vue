@@ -9,7 +9,10 @@
             @cancelBattle="handleCancelBatlle"
         />
         <GameBoard v-if="view === IGameViews.floor" />
-        <BattleBoard v-if="view === IGameViews.battle" />
+        <BattleBoard
+            v-if="view === IGameViews.battle"
+            playerA=""
+        />
         <ModalPopup v-if="confirmChallengeModal">
             <ChallengeInfo
                 :battleInfo="battle"
