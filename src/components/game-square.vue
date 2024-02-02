@@ -5,9 +5,6 @@
             ${isSelected && 'selected'}
             ${isAdjacentSquare && 'adjacent'}
         `"
-        :style="
-            `background-color: ${backgroundColor}`
-        "
         @click="setSelectedChallenger"
     >
         <p
@@ -48,21 +45,24 @@ const props = defineProps({
     }
 })
 
-const backgroundColor = computed(() => {
-    if (squareStore.displayType === IBoardDisplay.territories) {
-        return getPlayer.value(props.squareData.playerId)?.color
-    }
-    if (isSelected.value) {
-        return getPlayer.value(playerStore.selectedPlayer)?.color
-    }
-    return ''
-})
+// const backgroundColor = computed(() => {
+//     if (squareStore.displayType === IBoardDisplay.territories) {
+//         return getPlayer.value(props.squareData.playerId)?.color
+//     }
+//     if (isSelected.value) {
+//         return getPlayer.value(playerStore.selectedPlayer)?.color
+//     }
+//     return ''
+// })
 
 const isSelected = computed(() => {
     return playerStore.selectedPlayer === props.squareData.playerId
 })
 
 const isAdjacentSquare = computed(() => {
+    if (!squareStore.showAdjaceSquares) {
+        return false;
+    }
     if (!isSelected.value) {
         const adjacentSquares = getAdjacentSquares(
             props.squareData.row,
@@ -109,18 +109,20 @@ const setSelectedChallenger = () => {
     align-items: center;
     justify-content: center;
     text-align: center;
+    transition: all 0.3s linear;
     &:hover {
         color: #333;
         cursor: pointer;
-        background-color: orange;
+        background-color: var(--yellow-color);
         border: 5px solid var(--main-color)
     }
     &.selected {
-        background-color: yellow;
-        color: #333
+        background-color: var(--yellow-color);
+        color: #333;
+        transition: all 0.1s linear;
     }
     &.adjacent {
-        background-color: red;
+        background-color: #dc2626;
     }
 }
 </style>

@@ -102,9 +102,21 @@ const emit = defineEmits(['confirmChallenge', 'cancelBattle'])
 
 const selectPlayerRandomly = () => {
     onClearBattleData()
-    const max = playerStore.players.length
-    const index = Math.floor(Math.random() * max)
-    playerStore.setSelectedPlayer(playerStore.players[index].id)
+    const shuffle = 20
+    let shuffleNumber = 0
+    while (shuffleNumber < shuffle) {
+        shuffleNumber++
+        setTimeout(() => {
+            const max = playerStore.players.length
+            const index = Math.floor(Math.random() * max)
+            playerStore.setSelectedPlayer(playerStore.players[index].id)
+        }, (150 * shuffleNumber))
+    }
+    setTimeout(() => {
+        gameSquareStore.setShowAdjaceSquares(true)
+
+    }, 170 * shuffle)
+    // console.log('')
 }
 
 const onAcceptChallenge = () => {
@@ -116,6 +128,7 @@ const onCancelBattle = () => {
 }
 
 const onClearBattleData = () => {
+    gameSquareStore.setShowAdjaceSquares(false)
     playerStore.setSelectedPlayer('')
     playerStore.setSelectedChallenger('')
     categoryStore.setSelectedCategory('')

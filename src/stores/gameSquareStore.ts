@@ -7,6 +7,7 @@ export const useGameSquareStore = defineStore({
         squares: [] as IGameSquare[],
         selectedSquares: [] as IGameSquare[],
         displayType: IBoardDisplay.categories as IBoardDisplay,
+        showAdjaceSquares: false,
     }),
     getters: {
         getSquare: (state) => {
@@ -22,6 +23,9 @@ export const useGameSquareStore = defineStore({
         },
         setDisplayType(payload: IBoardDisplay) {
             this.displayType = payload
+        },
+        setShowAdjaceSquares(payload: boolean) {
+            this.showAdjaceSquares = payload
         }
     }
 })

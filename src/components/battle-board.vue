@@ -1,15 +1,37 @@
 <template>
     <div class="battle-board">
-        <div class="image-container" v-if="questions.length">
-            <img :src="questions[questionIndex].image" />
+        <div :class="`image-container ${showAnswer ? 'flipped' : ''}`" v-if="questions.length">
+            <div class="image-card">
+                <div class="image-front">
+                    <img v-if="started" :src="questions[questionIndex].image" />
+                    <h2 v-else>Ready?</h2>
+                </div>
+                <div class="image-back">
+                    <p v-if="showAnswer">{{questions[questionIndex].answer}}</p>
+                </div>
+            </div>
         </div>
         <footer>
-            <div class="player-info">{{ playerAComputedTime }} <span class="player-name">({{ playerStore.getPlayer(playerStore.selectedPlayer)?.name }})</span></div>
             <div class="time-state">
                 <p>TIME</p>
                 <p class="state">{{timerState}}</p>
             </div>
-            <div class="player-info"><span class="player-name">({{ playerStore.getPlayer(playerStore.selectedChallenger)?.name }})</span>{{ playerBComputedTime }}</div>
+            <div class="player-columns">
+                <div
+                    :class="`player-info ${selectedPlayer === 'playerA' ? 'selected' : ''}`"
+                    @click="() => setSelectedPlayer('playerA')"
+                >
+                    {{ playerAComputedTime }}
+                    <span class="player-name">({{ playerStore.getPlayer(playerStore.selectedPlayer)?.name }})</span>
+                </div>
+                <div
+                    :class="`player-info ${selectedPlayer === 'playerB' ? 'selected' : ''}`"
+                    @click="() => setSelectedPlayer('playerB')"
+                >
+                    <span class="player-name">({{ playerStore.getPlayer(playerStore.selectedChallenger)?.name }})</span>
+                    {{ playerBComputedTime }}
+                </div>
+            </div>
         </footer>
     </div>
 </template>
@@ -23,11 +45,11 @@ interface IQuestion {
 }
 
 enum Controls {
-    correct = 'c',
-    skip = 'k',
-    pause = 'p',
+    correct = 'ArrowRight',
+    skip = 'ArrowUp',
+    pause = ' ',
     start = 's',
-    stop = ' ',
+    stop = 'x',
     reset = 'r',
 }
 
@@ -43,7 +65,19 @@ const q = [
     {
         image: 'https://people.com/thmb/CaGmnUJZ5CTru3-l9fRiKKkDTSM=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc():focal(599x0:601x2)/bob-saget-06-cd12af74624741a5bc8c8a061b180d33.jpg',
         answer: 'Full House'
-    }
+    },
+    {
+        image: 'https://akns-images.eonline.com/eol_images/Entire_Site/20151019/rs_1024x759-151119101713-1024-married-the-children-cast.jpg?fit=around%7C1024:759&output-quality=90&crop=1024:759;center,top',
+        answer: 'Married With Childen'
+    },
+    {
+        image: 'https://cdn.abcotvs.com/dip/images/977594_091015-cc-Fresh-Prince-Thumb.jpg  ',
+        answer: 'Fresh Prince'
+    },
+    {
+        image: 'https://www.usmagazine.com/wp-content/uploads/2021/05/3rd-Rock-From-Sun-Cast-Where-Are-They-Now-Landing.jpg?quality=78&strip=all',
+        answer: '3rd Rock'
+    },
 ] as IQuestion[]
 
 const defaultTime = 1000 * 30
@@ -52,6 +86,8 @@ const playerStore = usePlayerStore()
 
 const questions: Ref<IQuestion[]> = ref([])
 const questionIndex = ref(0)
+const showAnswer = ref(false)
+const started = ref(false)
 
 const millisToMinutesAndSeconds = (millis: number) => {
   var minutes = Math.floor(millis / 60000);
@@ -77,6 +113,7 @@ let timer: number | null = null
 const timerState: Ref<TimerState> = ref(TimerState.stopped)
 
 const startTimer = () => {
+    started.value = true
     if (timer) {
         return
     }
@@ -86,26 +123,22 @@ const startTimer = () => {
     }
     timer = setInterval(() => {
         if (selectedPlayer.value === 'playerA') {
-            playerATime.value = playerATime.value - 100
-            if (playerATime.value <= 1) {
-                stopTimer()
+            if (playerATime.value <= 0) {
+                handleComplete()
                 return
+            } else if (playerATime.value > 0) {
+                playerATime.value = playerATime.value - 100
             }
         }
         if (selectedPlayer.value === 'playerB') {
-            playerBTime.value = playerBTime.value - 100
-            if (playerBTime.value <= 1) {
-                stopTimer()
+            if (playerBTime.value <= 0) {
+                handleComplete()
                 return
+            } else if (playerBTime.value > 0) {
+                playerBTime.value = playerBTime.value - 100
             }
         }
     }, 100)
-}
-
-const stopTimer = () => {
-    timerState.value = TimerState.stopped
-    if (timer) clearInterval(timer)
-    timer = null
 }
 
 const pauseTimer = () => {
@@ -114,20 +147,70 @@ const pauseTimer = () => {
     timer = null
 }
 
-const resetTimes = () => {
-    playerATime.value= defaultTime
+const resetGame = () => {
+    pauseTimer()
+    playerATime.value = defaultTime
     playerBTime.value = defaultTime
+    questionIndex.value = 0
+    showAnswer.value = false
+    started.value = false
 }
 
-const skipQuestion = () => {
+const handleComplete = () => {
+    pauseTimer()
+}
 
+const setSelectedPlayer = (p: Players) => {
+    selectedPlayer.value = p
+}
+
+const handleSkip = () => {
+    if (showAnswer.value) {
+        return
+    }
+    if (selectedPlayer.value === 'playerA' && playerATime.value >= 3000) {
+        if (playerATime.value >= 3000) {
+            playerATime.value = playerATime.value - 3000
+        } else {
+            playerATime.value = 0
+        }
+    }
+    if (selectedPlayer.value === 'playerB' && playerBTime.value >= 3000) {
+        if (playerBTime.value >= 3000) {
+            playerBTime.value = playerBTime.value - 3000
+        } else {
+            playerBTime.value = 0
+        }
+    }
+}
+
+const handleCorrect = () => {
+    if (!started.value) {
+        return
+    }
+    if (!showAnswer.value) {
+        // pause all time
+        pauseTimer()
+        showAnswer.value = true 
+    } else {
+        // start next round
+        showAnswer.value = false
+        setSelectedPlayer(selectedPlayer.value === 'playerA' ? 'playerB' : 'playerA')
+        if (questions.value.length - 1 > questionIndex.value) {
+            questionIndex.value++
+        } else {
+            pauseTimer()
+            return
+        }
+        startTimer()
+    }
 }
 
 const keyController = (e: KeyboardEvent) => {
     switch (e.key) {
     case Controls.correct:
         // Correct!
-        stopTimer()
+        handleCorrect()
         break
     case Controls.pause:
         // Pause
@@ -139,21 +222,17 @@ const keyController = (e: KeyboardEvent) => {
         break
     case Controls.skip:
         // Skip
-        skipQuestion()
-        break
-    case Controls.stop:
-        // Stop
-        stopTimer()
+        handleSkip()
         break
     case Controls.reset:
         // Reset times
-        resetTimes()
+        resetGame()
         break
     }
 }
 
 onMounted(() => {
-    stopTimer()
+    pauseTimer()
     questions.value = q
     document.addEventListener( "keydown", keyController );
 })
@@ -168,13 +247,52 @@ onMounted(() => {
         padding: 1rem;
         // border: 10px solid white;
         // border-radius: 10px;
-        img {
-            object-fit: cover;
+        height: 600px;
+        perspective: 1000px;
+        .image-card {
+            position: relative;
             width: 100%;
             height: 100%;
-            // overflow: hidden;
-            box-shadow: 0 12px 32px rgba(0,0,0,0.2);
-            border: 20px solid white;
+            text-align: center;
+            transition: transform 0.5s;
+            transform-style: preserve-3d;
+            .image-front,
+            .image-back {
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                -webkit-backface-visibility: hidden;
+                backface-visibility: hidden;
+                top: 0;
+                bottom: 0;
+            }
+            .image-back {
+                transform: rotateY(180deg);
+                background-color: white;
+                color: var(--font-color-dark);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .image-front {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                img {
+                    object-fit: cover;
+                    width: 100%;
+                    height: 100%;
+                    // overflow: hidden;
+                    box-shadow: 0 12px 32px rgba(0,0,0,0.2);
+                    border: 20px solid white;
+                    perspective: 1000px;
+                }
+            }
+        }
+        &.flipped {
+            .image-card {
+                transform: rotateY(-180deg);
+            }
         }
     }
     footer {
@@ -188,7 +306,6 @@ onMounted(() => {
         align-items: center;
         justify-content: space-between;
         background-color: var(--primary-color-light);
-        padding: 1rem 2rem;
         border-radius: 10px 10px 0 0;
         font-size: 2rem;
         box-shadow: 0 12px 32px rgba(0,0,0,0.2);
@@ -214,13 +331,34 @@ onMounted(() => {
                 font-size: 1rem;
             }
         }
-        .player-info {
+
+        .player-columns {
+            width: 100%;
             display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        .player-name {
-            font-size: 1rem;
+            justify-content: space-between;
+            .player-info {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                padding: 1rem 2rem;
+                width: 100%;
+                font-weight: 700;
+                cursor: pointer;
+                &.selected {
+                    background-color: var(--yellow-color);
+                    color: var(--font-color-dark)
+                }
+                &:nth-child(1) {
+                    border-radius: 10px 0 0 0;
+                }
+                &:nth-child(2) {
+                    border-radius: 0 10px 0 0;
+                    justify-content: flex-end;
+                }
+            }
+            .player-name {
+                font-size: 1rem;
+            }
         }
     }
 }
