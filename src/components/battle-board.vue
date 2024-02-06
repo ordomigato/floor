@@ -1,6 +1,6 @@
 <template>
-    <div class="battle-board">
-        <div :class="`image-container ${showAnswer ? 'flipped' : ''}`" v-if="questions.length">
+    <div :class="`battle-board ${skipped ? 'skipped' : ''}`">
+        <div v-if="questions.length && !finished" :class="`image-container ${showAnswer ? 'flipped' : ''}`">
             <div class="image-card">
                 <div class="image-front">
                     <img v-if="started" :src="questions[questionIndex].image" />
@@ -10,6 +10,19 @@
                     <p v-if="showAnswer">{{questions[questionIndex].answer}}</p>
                 </div>
             </div>
+        </div>
+        <div v-else class="winner-card">
+            <div v-if="winner">
+                <p>Winner</p>
+                <h2>
+                    {{
+                        winner === 'playerA'
+                            ? playerStore.getPlayer(playerStore.selectedPlayer)?.name
+                            : playerStore.getPlayer(playerStore.selectedChallenger)?.name
+                    }}
+                </h2>
+            </div>
+            <h2 v-else>It's a Tie!</h2>
         </div>
         <footer>
             <div class="time-state">
@@ -88,6 +101,7 @@ const questions: Ref<IQuestion[]> = ref([])
 const questionIndex = ref(0)
 const showAnswer = ref(false)
 const started = ref(false)
+const skipped = ref(false)
 
 const millisToMinutesAndSeconds = (millis: number) => {
   var minutes = Math.floor(millis / 60000);
@@ -100,6 +114,8 @@ const selectedPlayer: Ref<Players> = ref('playerA')
 
 const playerATime = ref(defaultTime)
 const playerBTime = ref(defaultTime)
+const winner: Ref<Players | null> = ref(null)
+const finished = ref(false)
 
 const playerAComputedTime = computed(() => {
     return millisToMinutesAndSeconds(playerATime.value)
@@ -158,6 +174,14 @@ const resetGame = () => {
 
 const handleComplete = () => {
     pauseTimer()
+    if (playerATime.value === playerBTime.value) {
+        // do nothing
+    } else if (playerATime.value > playerBTime.value) {
+        winner.value = 'playerA'
+    } else {
+        winner.value = 'playerB'
+    }
+    finished.value = true
 }
 
 const setSelectedPlayer = (p: Players) => {
@@ -165,23 +189,29 @@ const setSelectedPlayer = (p: Players) => {
 }
 
 const handleSkip = () => {
-    if (showAnswer.value) {
+    if (showAnswer.value || !started.value) {
+        return
+    } else {
+        showAnswer.value = true
+        skipped.value = true
+        setTimeout(() => {
+            showAnswer.value = false
+            nextQuestion()
+            skipped.value = false
+        }, 3000)
+    }
+}
+
+const nextQuestion = () => {
+    console.log('next')
+    if (questions.value.length - 1 > questionIndex.value) {
+        questionIndex.value++
+    } else {
+        pauseTimer()
+        handleComplete()
         return
     }
-    if (selectedPlayer.value === 'playerA' && playerATime.value >= 3000) {
-        if (playerATime.value >= 3000) {
-            playerATime.value = playerATime.value - 3000
-        } else {
-            playerATime.value = 0
-        }
-    }
-    if (selectedPlayer.value === 'playerB' && playerBTime.value >= 3000) {
-        if (playerBTime.value >= 3000) {
-            playerBTime.value = playerBTime.value - 3000
-        } else {
-            playerBTime.value = 0
-        }
-    }
+    startTimer()
 }
 
 const handleCorrect = () => {
@@ -196,13 +226,7 @@ const handleCorrect = () => {
         // start next round
         showAnswer.value = false
         setSelectedPlayer(selectedPlayer.value === 'playerA' ? 'playerB' : 'playerA')
-        if (questions.value.length - 1 > questionIndex.value) {
-            questionIndex.value++
-        } else {
-            pauseTimer()
-            return
-        }
-        startTimer()
+        nextQuestion()
     }
 }
 
@@ -243,6 +267,18 @@ onMounted(() => {
     width: 750px;
     padding: 1rem;
     background-color: var(--primary-color);
+    &.skipped {
+        .player-info.selected {
+            background-color: red !important;
+        }
+    }
+    .winner-card {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 600px;
+        text-align: center;
+    }
     .image-container {
         padding: 1rem;
         // border: 10px solid white;
@@ -273,7 +309,9 @@ onMounted(() => {
                 display: flex;
                 align-items: center;
                 justify-content: center;
-            }
+                font-weight: 600;
+                font-size: 2rem;
+            }   
             .image-front {
                 display: flex;
                 align-items: center;

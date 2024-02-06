@@ -114,7 +114,7 @@ const setSelectedChallenger = () => {
         color: #333;
         cursor: pointer;
         background-color: var(--yellow-color);
-        border: 5px solid var(--main-color)
+        border: 5px solid var(--primary-color)
     }
     &.selected {
         background-color: var(--yellow-color);

@@ -26,7 +26,7 @@ body {
 button {
   border: 1px solid var(--secondary-color-dark);
   background-color: var(--secondary-color);
-  padding: 1rem 0.5rem;
+  padding: 1rem;
   cursor: pointer;
   color: white;
   border-radius: 4px;
@@ -39,11 +39,41 @@ button:hover {
 
 label {
   display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
   input[type="radio"] {
     margin-right: 0.5rem;
+  }
+  input {
+    padding: 0.5rem;
+    border: 0;
+    border-radius: 4px;
+  }
+  span {
+    margin-bottom: 0.5rem
+  }
+  span {
+    display: block;
+    margin-right: 1rem;
+  }
+  input: {
+    display: block;
   }
 }
 
 .w-100 {
   width: 100%;
+}
+
+main {
+  display: flex;
+  justify-content: center;
+}
+
+main .card {
+  width: 100%;
+  margin: 1rem;
+  padding: 1rem;
+  border-radius: 4px;
+  background-color: var(--primary-color-dark);
 }
