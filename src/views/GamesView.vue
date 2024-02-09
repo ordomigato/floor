@@ -20,13 +20,22 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>Game Name</td>
+                        <tr v-for="game in games" :key="game.id">
+                            <td>{{ game.name }}</td>
                             <td align="right">
-                                <button>
+                                <button
+                                    @click="() => $router.push({
+                                        name: 'game-edit',
+                                        params: {
+                                            id: game.id
+                                        }
+                                    })"
+                                >
                                     Edit
                                 </button>
-                                <button>
+                                <button
+                                    @click="$router.push({ name: 'game-start', params: {id: game.id}})"
+                                >
                                     Play
                                 </button>
                             </td>
@@ -35,28 +44,48 @@
                 </table>
             </div>
         </div>
+        <div class="card">
+            <button
+                @click="handleLogout"
+            >
+                Logout
+            </button>
+        </div>
     </main>
 </template>
-<style lang="scss">
-table {
-    margin-top: 2rem;
-    width: 100%;
-    border: 1px solid var(--primary-color);
-    border-spacing: 0;
-    thead {
-        background-color: var(--primary-color);
-        tr {
-            th {
-                padding: 1rem;
-            }
+<script setup lang="ts">
+import { logout } from '@/services/auth';
+import { onMounted, ref, type Ref } from 'vue';
+import { collection, where, query, getDocs } from "firebase/firestore"; 
+import { auth, db } from '@/services/firebase';
+import type { IGame } from '@/types';
+
+const handleLogout = async () => {
+    logout()
+}
+
+const games: Ref<IGame[]> = ref([])
+
+const getGames = async () => {
+    try {
+        if (!auth.currentUser) {
+            throw new Error("User not logged in")
         }
-    }
-    tbody {
-        tr {
-            td {
-                padding: 1rem;
-            }
-        }
+        const q = query(collection(db, "games"), where("owner_id", "==", auth.currentUser.uid));
+
+        const querySnapshot = await getDocs(q);
+        querySnapshot.forEach((doc) => {
+            games.value.push({
+                id: doc.id,
+                ...doc.data()
+            } as IGame)
+        });
+    } catch (e) {
+        console.error(e)
     }
 }
-</style>
+
+onMounted(() => {
+    getGames()
+})
+</script>

@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-import app from '@/services/firebase';
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from '@/services/firebase';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -22,12 +22,32 @@ const router = createRouter({
       component: () => import('../views/GameCreate.vue')
     },
     {
-      path: '/game/edit',
+      path: '/game/:id',
       name: 'game-edit',
       component: () => import('../views/GameEdit.vue')
     },
     {
-      path: '/game/start',
+      path: '/game/:id/players',
+      name: 'game-players',
+      component: () => import('../views/ManagePlayers.vue')
+    },
+    {
+      path: '/game/:id/players/:playerId',
+      name: 'player-edit',
+      component: () => import('../views/PlayerEdit.vue')
+    },
+    {
+      path: '/game/:id/categories',
+      name: 'game-categories',
+      component: () => import('../views/ManageCategories.vue')
+    },
+    {
+      path: '/game/:id/categories/:catId',
+      name: 'category-edit',
+      component: () => import('../views/CategoryEdit.vue')
+    },
+    {
+      path: '/game/:id/start',
       name: 'game-start',
       component: () => import('../views/GameView.vue')
     }
@@ -35,13 +55,10 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const auth = getAuth(app);
   onAuthStateChanged(auth, (user) => {
     if (user) {
       // User is signed in, see docs for a list of available properties
       // https://firebase.google.com/docs/reference/js/auth.user
-      const uid = user.uid;
-      console.log(user)
       if (to.name === 'home') {
         router.push({ name: 'games' })
       }

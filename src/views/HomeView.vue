@@ -23,8 +23,8 @@
   </main>
 </template>
 <script lang="ts" setup>
-import app from "@/services/firebase";
-import { getAuth, signInWithEmailAndPassword  } from "firebase/auth";
+import { auth } from "@/services/firebase";
+import { signInWithEmailAndPassword  } from "firebase/auth";
 import { ref, type Ref } from "vue";
 import { useRouter } from "vue-router";
 
@@ -34,7 +34,6 @@ const email: Ref<HTMLInputElement | undefined> = ref()
 const password: Ref<HTMLInputElement | undefined> = ref()
 
 const login = () => {
-  const auth = getAuth(app)
   if (!email.value || !password.value) {
     return
   }

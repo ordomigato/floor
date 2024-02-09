@@ -32,10 +32,12 @@ import { computed, onMounted, ref, type Ref } from 'vue';
 import { useGameSquareStore } from '@/stores/gameSquareStore'
 import { usePlayerStore } from '@/stores/playerStore'
 import { IGameViews, type IBattleData, type ICategories, type IGameSquare, type IPlayer } from '@/types';
-import { randomizeColor } from '@/utils/randomize-color'
 import PlayerBoard from '@/components/player-board.vue';
 import { useCategoryStore } from '@/stores/categoryStore';
 import BattleBoard from '@/components/battle-board.vue';
+import { collection, getDocs } from 'firebase/firestore';
+import { auth, db } from '@/services/firebase';
+import { useRoute } from 'vue-router';
 
 const defaultBattle: IBattleData = {
     playerAId: '',
@@ -46,6 +48,8 @@ const defaultBattle: IBattleData = {
 const squareStore = useGameSquareStore()
 const playerStore = usePlayerStore()
 const categoryStore = useCategoryStore()
+
+const route = useRoute()
 
 const error = ref('');
 
@@ -63,18 +67,28 @@ const isBattleReady = computed(() => {
 
 const getPlayers = async () => {
     try {
-        const resp = await fetch("https://jsonplaceholder.typicode.com/users")
-            .then(resp => resp.json())
+        try {
+        if (!auth.currentUser) {
+            throw new Error("User not logged in")
+        }
+        const gameRef = collection(db, "games", route.params.id as string, 'players');
 
-        const data = resp.slice(-49) as IPlayer[]
+        const gameSnap = await getDocs(gameRef);
 
-        const players: IPlayer[] = data.map(p => ({
-            id: p.id,
-            name: p.name,
-            color: randomizeColor(),
-        }))
+        const players: IPlayer[] = []
+
+        gameSnap.forEach((doc) => {
+            players.push({
+                id: doc.id,
+                ...doc.data()
+            } as IPlayer)
+        });
 
         playerStore.setPlayers(players)
+    } catch (e) {
+        console.error(e)
+    }   
+
     } catch (e) {
         if (e instanceof Error) {
             error.value = e.message

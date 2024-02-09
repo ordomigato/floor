@@ -68,12 +68,36 @@ label {
 main {
   display: flex;
   justify-content: center;
+  flex-direction: column;
+  width: 100%;
 }
 
 main .card {
-  width: 100%;
   margin: 1rem;
   padding: 1rem;
   border-radius: 4px;
   background-color: var(--primary-color-dark);
+}
+
+table {
+  margin-top: 2rem;
+  width: 100%;
+  border: 1px solid var(--primary-color);
+  border-spacing: 0;
+  thead {
+      background-color: var(--primary-color);
+      tr {
+          th {
+              text-align: left;
+              padding: 1rem;
+          }
+      }
+  }
+  tbody {
+      tr {
+          td {
+              padding: 1rem;
+          }
+      }
+  }
 }

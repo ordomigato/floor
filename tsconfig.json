@@ -1,4 +1,9 @@
 {
+  "compilerOptions": {
+    "module": "esnext",
+    "target": "ESNext",
+  },
+  "moduleResolution": "Node",
   "files": [],
   "references": [
     {

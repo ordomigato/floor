@@ -12,6 +12,11 @@ export interface ICategories {
     questions: [],
 }
 
+export interface ICategory {
+    id: string,
+    name: string,
+}
+
 export interface IPlayer {
     id: string,
     name: string,
@@ -33,4 +38,10 @@ export interface IBattleData {
 export enum IGameViews {
     floor = 'floor',
     battle = 'battle'
+}
+
+export interface IGame {
+    id: string,
+    name: string,
+    owner_id: string,
 }
