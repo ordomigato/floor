@@ -45,3 +45,9 @@ export interface IGame {
     name: string,
     owner_id: string,
 }
+
+export interface IQuestion {
+    id: string,
+    answer: string,
+    imgUrl: string,
+}
