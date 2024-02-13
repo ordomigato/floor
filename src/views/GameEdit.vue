@@ -25,15 +25,15 @@
             </button>
         </div>
         <div class="card">
-            <button
-                @click="deleteGame"
-            >
-                Delete Game
-            </button>
+            <DeleteSection
+                text="Game"
+                @delete="deleteGame"
+            />
         </div>
     </main>
 </template>
 <script setup lang="ts">
+import DeleteSection from '@/components/DeleteSection.vue';
 import { auth, db } from '@/services/firebase';
 import { deleteDoc, doc } from 'firebase/firestore';
 import { useRoute, useRouter } from 'vue-router';

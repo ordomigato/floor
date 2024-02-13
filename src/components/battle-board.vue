@@ -129,6 +129,9 @@ let timer: number | null = null
 const timerState: Ref<TimerState> = ref(TimerState.stopped)
 
 const startTimer = () => {
+    if (finished.value) {
+        return
+    }
     started.value = true
     if (timer) {
         return
@@ -170,6 +173,8 @@ const resetGame = () => {
     questionIndex.value = 0
     showAnswer.value = false
     started.value = false
+    finished.value = false
+    winner.value = null
 }
 
 const handleComplete = () => {
@@ -189,7 +194,7 @@ const setSelectedPlayer = (p: Players) => {
 }
 
 const handleSkip = () => {
-    if (showAnswer.value || !started.value) {
+    if (showAnswer.value || !started.value || finished.value) {
         return
     } else {
         showAnswer.value = true
@@ -215,7 +220,7 @@ const nextQuestion = () => {
 }
 
 const handleCorrect = () => {
-    if (!started.value) {
+    if (!started.value || finished.value) {
         return
     }
     if (!showAnswer.value) {
