@@ -2,10 +2,13 @@
     <main>
         <div class="card">
             <button
-                @click="deletePlayer"
+                @click="$router.push({ name: 'game-players', params: { id: $route.params.id } })"
             >
-                Delete Player
+                Go Back to Players List
             </button>
+        </div>
+        <div class="card">
+            <DeleteSection text="Player" @delete="deletePlayer" />
         </div>
     </main>
 </template>
@@ -14,6 +17,7 @@
 import { auth, db } from '@/services/firebase';
 import { deleteDoc, doc } from 'firebase/firestore';
 import { useRoute, useRouter } from 'vue-router';
+import DeleteSection from '@/components/DeleteSection.vue'
 
 const route = useRoute()
 const router = useRouter()

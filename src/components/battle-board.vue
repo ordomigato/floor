@@ -125,7 +125,7 @@ const playerBComputedTime = computed(() => {
     return millisToMinutesAndSeconds(playerBTime.value)
 })
 
-let timer: number | null = null
+let timer: NodeJS.Timeout | null = null
 const timerState: Ref<TimerState> = ref(TimerState.stopped)
 
 const startTimer = () => {

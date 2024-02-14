@@ -119,6 +119,7 @@ const catName = ref('')
 
 const questionError = ref('')
 
+// @ts-ignore
 const handleImage = (e) => {
     image.value = e.target.files[0]
 }
@@ -238,9 +239,11 @@ const addQuestionPart2 = async (url: string) => {
 
 const uploadImage = async (next: (url: string) => void) => {
     try {
+        // @ts-ignore
         const { name, type } = image.value
         
         const storageRef = fbref(storage, 'images/' + name)
+        // @ts-ignore
         const uploadTask = uploadBytesResumable(storageRef, image.value, {
             contentType: type
         })

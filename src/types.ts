@@ -21,6 +21,7 @@ export interface IPlayer {
     id: string,
     name: string,
     color: string,
+    catId: string,
 }
 
 export enum IBoardDisplay {

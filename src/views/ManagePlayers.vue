@@ -27,6 +27,7 @@
                     <thead>
                         <tr>
                             <th>Player Name</th>
+                            <th>Player Category</th>
                             <th>Color</th>
                             <th>Actions</th>
                         </tr>
@@ -34,10 +35,26 @@
                     <tbody>
                         <tr v-for="player in players" :key="player.id">
                             <td>{{ player.name }}</td>
-                            <th class="player-color-container">
+                            <td>
+                                <select
+                                    @change="(e) => setCategory(player, e)"
+                                >
+                                    <option>Select Category</option>
+                                    <option
+                                        v-for="cat in categories"
+                                        :key="cat.id"
+                                        :value="cat.id"
+                                        :selected="cat.id === player.catId"
+                                        :disabled="availableCat.has(cat.id)"
+                                    >
+                                        {{ cat.name }}
+                                    </option>
+                                </select>
+                            </td>
+                            <td class="player-color-container">
                                 <span class="player-color" :style="`background-color: ${player.color};`"></span>
                                 {{ player.color }}
-                            </th>
+                            </td>
                             <td>
                                 <button
                                     @click="$router.push({ name: 'player-edit', params: {
@@ -57,10 +74,10 @@
 </template>
 <script setup lang="ts">
 import { auth, db } from '@/services/firebase';
-import type { IPlayer } from '@/types';
+import type { ICategory, IPlayer } from '@/types';
 import { randomizeColor } from '@/utils/randomize-color';
-import { addDoc, collection, getDocs, query } from 'firebase/firestore';
-import { onMounted, ref, type Ref } from 'vue';
+import { addDoc, collection, doc, getDocs, query, setDoc } from 'firebase/firestore';
+import { computed, onMounted, ref, type ComputedRef, type Ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 const route = useRoute()
@@ -68,6 +85,26 @@ const route = useRoute()
 const playerName = ref('')
 
 const players: Ref<IPlayer[]> = ref([])
+
+const categories: Ref<ICategory[]> = ref([])
+
+const availableCat: ComputedRef<Set<string>> = computed(() => {
+    const usedCats: string[] = players.value.reduce((acc: string[], val) => {
+        if (val.catId) {
+            acc.push(val.catId)
+            return acc
+        }
+        return acc
+    }, [] as string[])
+    const usedCatsSet = new Set(usedCats)
+    // const resp: ICategory[] = categories.value.filter(c => {
+    //     if (!usedCatsSet.has(c.id)) {
+    //         return c
+    //     }
+    //     return
+    // })
+    return usedCatsSet
+})
 
 const addPlayer = async () => {
     try {
@@ -92,7 +129,37 @@ const addPlayer = async () => {
 
         players.value.push({
             id: p.id,
-            ...player
+            ...player,
+            catId: ''
+        })
+    } catch (e) {
+        console.error(e)
+    }
+}
+
+const setCategory = async (player: IPlayer, e: any) => {
+    try {
+        if (!auth.currentUser) {
+            throw new Error("User not logged in")
+        }
+
+        const catId = e.target.value
+
+        const playerRef = doc(db, "games", route.params.id as string, "players", player.id)
+
+        const payload: IPlayer = {
+            ...player,
+            catId,
+        }
+
+        setDoc(playerRef, payload)
+
+        players.value = players.value.map(p => {
+            if (p.id === player.id) {
+                return payload
+            } else {
+                return p
+            }
         })
     } catch (e) {
         console.error(e)
@@ -111,7 +178,6 @@ const getPlayers = async () => {
 
         const querySnapshot = await getDocs(q);
         querySnapshot.forEach((doc) => {
-            console.log(doc.data())
             players.value.push({
                 id: doc.id,
                 ...doc.data()
@@ -122,8 +188,31 @@ const getPlayers = async () => {
     }
 }
 
-onMounted(() => {
-    getPlayers()
+const getCategories = async () => {
+    try {
+        if (!auth.currentUser) {
+            throw new Error("User not logged in")
+        }
+        
+        const catCollection = collection(db, "games", route.params.id as string, "categories")
+
+        const q = query(catCollection);
+
+        const querySnapshot = await getDocs(q);
+        querySnapshot.forEach((doc) => {
+            categories.value.push({
+                id: doc.id,
+                ...doc.data()
+            } as ICategory)
+        });
+    } catch (e) {
+        console.error(e)
+    }
+}
+
+onMounted(async() => {
+    await getPlayers()
+    await getCategories()
 })
 </script>
 <style lang="scss" scoped>
