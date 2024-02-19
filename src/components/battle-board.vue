@@ -15,12 +15,13 @@
             <div v-if="winner">
                 <p>Winner</p>
                 <h2>
-                    {{
-                        winner === 'playerA'
-                            ? playerStore.getPlayer(playerStore.selectedPlayer)?.name
-                            : playerStore.getPlayer(playerStore.selectedChallenger)?.name
-                    }}
+                    {{ playerStore.getPlayer(winner)?.name }}
                 </h2>
+                <button
+                    @click="submitWinner"
+                >
+                    Complete Round
+                </button>
             </div>
             <h2 v-else>It's a Tie!</h2>
         </div>
@@ -49,8 +50,13 @@
     </div>
 </template>
 <script setup lang="ts">
+import { db } from '@/services/firebase';
+import { useGameSquareStore } from '@/stores/gameSquareStore';
 import { usePlayerStore } from '@/stores/playerStore';
+import type { IGameSquare } from '@/types';
+import { doc, updateDoc } from 'firebase/firestore';
 import { computed, onMounted, ref, type Ref } from 'vue';
+import { useRoute } from 'vue-router';
 
 interface IQuestion {
     image: string
@@ -96,6 +102,10 @@ const q = [
 const defaultTime = 1000 * 30
 
 const playerStore = usePlayerStore()
+const squareStore = useGameSquareStore()
+const route = useRoute()
+
+const emit = defineEmits(['complete'])
 
 const questions: Ref<IQuestion[]> = ref([])
 const questionIndex = ref(0)
@@ -114,7 +124,8 @@ const selectedPlayer: Ref<Players> = ref('playerA')
 
 const playerATime = ref(defaultTime)
 const playerBTime = ref(defaultTime)
-const winner: Ref<Players | null> = ref(null)
+const winner: Ref<string | null> = ref(null)
+const loser: Ref<string | null> = ref(null)
 const finished = ref(false)
 
 const playerAComputedTime = computed(() => {
@@ -175,6 +186,7 @@ const resetGame = () => {
     started.value = false
     finished.value = false
     winner.value = null
+    loser.value = null
 }
 
 const handleComplete = () => {
@@ -182,9 +194,11 @@ const handleComplete = () => {
     if (playerATime.value === playerBTime.value) {
         // do nothing
     } else if (playerATime.value > playerBTime.value) {
-        winner.value = 'playerA'
+        winner.value = playerStore.selectedPlayer
+        loser.value = playerStore.selectedChallenger
     } else {
-        winner.value = 'playerB'
+        winner.value = playerStore.selectedChallenger
+        loser.value = playerStore.selectedPlayer
     }
     finished.value = true
 }
@@ -208,7 +222,6 @@ const handleSkip = () => {
 }
 
 const nextQuestion = () => {
-    console.log('next')
     if (questions.value.length - 1 > questionIndex.value) {
         questionIndex.value++
     } else {
@@ -232,6 +245,52 @@ const handleCorrect = () => {
         showAnswer.value = false
         setSelectedPlayer(selectedPlayer.value === 'playerA' ? 'playerB' : 'playerA')
         nextQuestion()
+    }
+}
+
+const submitWinner = () => {
+    try {
+        // step 1: Winner takes over losers squares / replacing category id with winner's category id.
+        // step 2: Save new game board to db
+        if (!winner.value) {
+            throw new Error('winner does not exist')
+        }
+        if (!loser.value) {
+            throw new Error('loser does not exist')
+        }
+        const winnerPlayer = playerStore.getPlayer(winner.value)
+        if (!winnerPlayer) {
+            throw new Error('winner player data not found')
+        }
+        if (!winnerPlayer.catId) {
+            throw new Error("winner's category could not be found")
+        }
+        const newSquareData = squareStore.squares.map((s: IGameSquare) => {
+            if (s.playerId === loser.value) {
+                return {
+                    ...s,
+                    playerId: winnerPlayer.id,
+                    categoryId: winnerPlayer.catId
+                }
+            } else {
+                return s
+            }
+        })
+
+        // save to db
+        const gameRef = doc(db, "games", route.params.id as string)
+
+        updateDoc(gameRef, {
+            save: {
+                board: newSquareData,
+            }
+        })
+        // set locally
+        squareStore.setSquares(newSquareData)
+
+        emit('complete')
+    } catch (e) {
+        console.error(e)
     }
 }
 

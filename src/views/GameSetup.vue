@@ -133,8 +133,6 @@ const createGame = () => {
 
         const gameRef = doc(db, "games", route.params.id as string)
 
-        console.log(gameSquareData)
-
         updateDoc(gameRef, {
             save: {
                 board: gameSquareData,

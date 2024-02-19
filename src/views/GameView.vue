@@ -11,7 +11,7 @@
         <GameBoard v-if="view === IGameViews.floor" />
         <BattleBoard
             v-if="view === IGameViews.battle"
-            playerA=""
+            @complete="handleCancelBatlle"
         />
         <ModalPopup v-if="confirmChallengeModal">
             <ChallengeInfo
