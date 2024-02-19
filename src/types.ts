@@ -21,18 +21,18 @@ export interface IPlayer {
 export enum IBoardDisplay {
     categories = 'categories',
     players = 'players',
-    territories = 'territories'
+    territories = 'territories',
 }
 
 export interface IBattleData {
     playerAId: string,
     playerBId: string,
-    categoryId: string
+    categoryId: string,
 }
 
 export enum IGameViews {
     floor = 'floor',
-    battle = 'battle'
+    battle = 'battle',
 }
 
 export interface IGame {
@@ -40,7 +40,7 @@ export interface IGame {
     name: string,
     owner_id: string,
     save?: {
-        board: IGameSquare[]
+        board: IGameSquare[],
     }
 }
 
@@ -48,4 +48,13 @@ export interface IQuestion {
     id: string,
     answer: string,
     imgUrl: string,
+}
+
+export interface IAddQuestionRequest {
+    answer: string,
+    imgUrl: string,
+}
+
+export interface IUpdateCategoryRequest {
+    name: string,
 }

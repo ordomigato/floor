@@ -10,29 +10,32 @@
                 />
             </label>
             <button
-                @click="createGame"
+                @click="handleCreateGame"
             >
                 Create
             </button>
-            {{ error }}
+            <p v-if="error" class="error">{{ error.message }}</p>
         </div>
     </main>
 </template>
 <script setup lang="ts">
-import { ref } from 'vue';
-import { db, auth } from '@/services/firebase';
-import { doc, setDoc } from "firebase/firestore"; 
-import { v4 as uuidv4 } from 'uuid';
+import { ref, type Ref } from 'vue';
+import { auth } from '@/services/firebase';
+
 
 import { useRouter } from 'vue-router';
+import { createGame } from '@/services/game';
 
 const router = useRouter()
 
 const gameName = ref('')
 
-const error = ref('')
+const error: Ref<Error | null> = ref(null)
+const loading = ref(false)
 
-const createGame = async () => {
+const handleCreateGame = async () => {
+    loading.value = true
+    error.value = null
     try {
         if (!auth.currentUser) {
             throw new Error('User is not logged in')
@@ -42,18 +45,17 @@ const createGame = async () => {
             throw new Error('Please enter a name for your game')
         }
 
-        await setDoc(doc(db, "games", uuidv4()), {
-            name: gameName.value,
-            owner_id: auth.currentUser.uid,
-        });
+        await createGame(gameName.value, auth.currentUser.uid)
 
         router.push({ name: 'games' })
     } catch (e) {
         if (e instanceof Error) {
-            error.value = e.message
+            error.value = e
         } else {
             console.error(e)
         }
+    } finally {
+        loading
     }
 }
 </script>

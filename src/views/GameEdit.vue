@@ -5,6 +5,7 @@
                 Back to Games List
             </button>
         </div>
+        <p v-if="error" class="error">{{ error.message }}</p>
         <div class="card">
             <h2>Edit Game</h2>
             <button @click="$router.push({
@@ -27,31 +28,38 @@
         <div class="card">
             <DeleteSection
                 text="Game"
-                @delete="deleteGame"
+                @delete="handleDeleteGame"
             />
         </div>
     </main>
 </template>
 <script setup lang="ts">
 import DeleteSection from '@/components/DeleteSection.vue';
-import { auth, db } from '@/services/firebase';
-import { deleteDoc, doc } from 'firebase/firestore';
+import { deleteGame } from '@/services/game';
+import { ref, type Ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute()
 const router = useRouter()
 
-const deleteGame = async () => {
-    try {
-        if (!auth.currentUser) {
-            throw new Error("User not logged in")
-        }
+const error: Ref<Error | null> = ref(null)
+const loading = ref(false)
 
-        await deleteDoc(doc(db, "games", route.params.id as string));
+const handleDeleteGame = async () => {
+    loading.value = true
+    error.value = null
+    try {
+        deleteGame(route.params.id as string)
 
         router.push({ name: 'games' })
     } catch (e) {
-        console.error(e)
+        if (e instanceof Error) {
+            error.value = e
+        } else {
+            console.error(e)
+        }
+    } finally {
+        loading.value = false
     }
 }
 </script>

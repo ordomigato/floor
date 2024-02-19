@@ -19,7 +19,7 @@ export const usePlayerStore = defineStore({
     },
     actions: {
         setPlayers(payload: IPlayer[]) {
-            this.players = payload 
+            this.players = payload.sort((a, b) => a.name.localeCompare(b.name))
         },
         setSelectedPlayer(payload: string) {
             this.selectedPlayer = payload
