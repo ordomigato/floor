@@ -34,7 +34,7 @@
                                     Edit
                                 </button>
                                 <button
-                                    @click="$router.push({ name: 'game-start', params: {id: game.id}})"
+                                    @click="() => playGame(game)"
                                 >
                                     Play
                                 </button>
@@ -59,6 +59,9 @@ import { onMounted, ref, type Ref } from 'vue';
 import { collection, where, query, getDocs } from "firebase/firestore"; 
 import { auth, db } from '@/services/firebase';
 import type { IGame } from '@/types';
+import { useRouter } from 'vue-router';
+
+const router = useRouter()
 
 const handleLogout = async () => {
     logout()
@@ -82,6 +85,14 @@ const getGames = async () => {
         });
     } catch (e) {
         console.error(e)
+    }
+}
+
+const playGame = (game: IGame) => {
+    if (game.save?.board) {
+        router.push({ name: 'game-start', params: {id: game.id}})
+    } else {
+        router.push({ name: 'game-setup', params: {id: game.id}})
     }
 }
 

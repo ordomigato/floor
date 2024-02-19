@@ -1,19 +1,19 @@
-import { type ICategories } from "@/types";
+import { type ICategory } from "@/types";
 import { acceptHMRUpdate, defineStore } from "pinia";
 
 export const useCategoryStore = defineStore({
     id: 'category',
     state: () => ({
-        categories: [] as ICategories[],
+        categories: [] as ICategory[],
         selectedCategory: '',
     }),
     getters: {
         getCategory: (state) => {
-            return (catId: string): ICategories | undefined => state.categories.find(c => c.id === catId)
+            return (catId: string): ICategory | undefined => state.categories.find(c => c.id === catId)
         }
     },
     actions: {
-        setCategories(payload: ICategories[]) {
+        setCategories(payload: ICategory[]) {
             this.categories = payload 
         },
         setSelectedCategory(payload: string) {

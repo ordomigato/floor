@@ -31,11 +31,11 @@ import ChallengeInfo from '@/components/challenge-info.vue'
 import { computed, onMounted, ref, type Ref } from 'vue';
 import { useGameSquareStore } from '@/stores/gameSquareStore'
 import { usePlayerStore } from '@/stores/playerStore'
-import { IGameViews, type IBattleData, type ICategories, type IGameSquare, type IPlayer } from '@/types';
+import { IGameViews, type IBattleData, type ICategory, type IPlayer, type IGame } from '@/types';
 import PlayerBoard from '@/components/player-board.vue';
 import { useCategoryStore } from '@/stores/categoryStore';
 import BattleBoard from '@/components/battle-board.vue';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, query } from 'firebase/firestore';
 import { auth, db } from '@/services/firebase';
 import { useRoute } from 'vue-router';
 
@@ -96,40 +96,47 @@ const getPlayers = async () => {
     }
 }
 
-const setupCategories = async () => {
+const getCategories = async () => {
     try {
-        const resp: {
-            completed: boolean,
-            id: number,
-            title: string,
-            userId: number,
-        }[] = await fetch("https://jsonplaceholder.typicode.com/todos")
-            .then(resp => resp.json())
+        if (!auth.currentUser) {
+            throw new Error("User not logged in")
+        }
+        
+        const catCollection = collection(db, "games", route.params.id as string, "categories")
 
-        const data = resp.slice(-49)
-        const sqrt = Math.sqrt(data.length)
-        // setup categories
-        const categoriesData: ICategories[] = data.map((c) => {
-            return {
-                id: `${c.id}`,
-                name: c.title,
-                questions: []
-            }
-        })
-        categoryStore.setCategories(categoriesData)
-        // setup game squares
-        const gameSquareData: IGameSquare[] = categoriesData.map((c, i) => {
-            const col = (i % sqrt) + 1
-            const row = (Math.floor(i/sqrt)) + 1
-            return {
-                id: `${row}-${col}`,
-                row: row,
-                col: col,
-                playerId: playerStore.players[i % playerStore.players.length].id,
-                categoryId: c.id,
-            }
-        })
-        squareStore.setSquares(gameSquareData)
+        const q = query(catCollection);
+
+        const querySnapshot = await getDocs(q);
+
+        const categories: ICategory[] = []
+
+        querySnapshot.forEach((doc) => {
+            categories.push({
+                ...doc.data() as ICategory,
+                id: doc.id
+            })
+        });
+
+        categoryStore.setCategories(categories)
+    } catch (e) {
+        console.error(e)
+    }
+}
+
+const getGame = async () => {
+    try {
+        if (!auth.currentUser) {
+            throw new Error("User not logged in")
+        }
+
+        const gameSnapshot: IGame = await getDoc(doc(db, "games", route.params.id as string))
+            .then(resp => resp.data() as IGame)
+
+        if (!gameSnapshot.save?.board) {
+            throw new Error("Error loading game board")
+        }
+
+        squareStore.setSquares(gameSnapshot.save.board)
     } catch (e) {
         if (e instanceof Error) {
             error.value = e.message
@@ -166,7 +173,8 @@ categoryStore.$subscribe((mutation, state) => {
 
 onMounted(async () => {
     await getPlayers()
-    await setupCategories()
+    await getCategories()
+    await getGame()
 })
 </script>
 <style lang="scss">

@@ -1,6 +1,6 @@
 <template>
     <div class="controller">
-        <div
+        <nav
             v-if="props.gameView === IGameViews.floor"
         >
             <button
@@ -58,15 +58,23 @@
                     Clear Challenge Data
                 </button>
             </div>
-        </div>
-        <div v-if="props.gameView === IGameViews.battle">
+            <div class="mt-auto">
+                <button
+                    class="w-100"
+                    @click="$router.push({name: 'games'})"
+                >
+                    Quit Game
+                </button>
+            </div>
+        </nav>
+        <nav v-if="props.gameView === IGameViews.battle">
             <button
                 class="w-100"
                 @click="onCancelBattle"
             >
                 Cancel Challenge
             </button>
-        </div>
+        </nav>
     </div>
 </template>
 <script setup lang="ts">
@@ -145,10 +153,20 @@ const onClearBattleData = () => {
     p {
         margin: 0;
     }
+    label {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+    }
     .battle-data {
         button {
             margin-top: 1rem;
         }
+    }
+    nav {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
     }
 }
 </style>

@@ -6,12 +6,6 @@ export interface IGameSquare {
     categoryId: string,
 }
 
-export interface ICategories {
-    id: string,
-    name: string,
-    questions: [],
-}
-
 export interface ICategory {
     id: string,
     name: string,
@@ -45,6 +39,9 @@ export interface IGame {
     id: string,
     name: string,
     owner_id: string,
+    save?: {
+        board: IGameSquare[]
+    }
 }
 
 export interface IQuestion {
