@@ -1,8 +1,8 @@
-import { addDoc, collection, doc, getDoc, getDocs, query, setDoc, deleteDoc } from "firebase/firestore";
+import { addDoc, collection, doc, getDoc, getDocs, query, setDoc, deleteDoc, updateDoc } from "firebase/firestore";
 import { ref as fbref, getDownloadURL, uploadBytesResumable } from 'firebase/storage';
 import { db, storage } from "./firebase";
 import { v4 as uuidv4 } from 'uuid';
-import type { IAddQuestionRequest, ICategory, IQuestion, IUpdateCategoryRequest } from "@/types";
+import type { IAddQuestionRequest, ICategory, IGameSaveState, IQuestion, IUpdateCategoryRequest } from "@/types";
 
 
 //////////
@@ -14,6 +14,14 @@ export async function createGame(gameName: string, ownerId: string): Promise<voi
         name: gameName,
         owner_id: ownerId,
     });
+}
+
+export async function saveGame(gameId: string, payload: IGameSaveState): Promise<void> {
+    const gameRef = doc(db, "games", gameId)
+
+    updateDoc(gameRef, {
+        save: payload
+    })
 }
 
 export async function deleteGame(gameId: string) {

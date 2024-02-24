@@ -18,6 +18,15 @@ export const useGameSquareStore = defineStore({
         setSquares(payload: IGameSquare[]) {
             this.squares = payload 
         },
+        setSquare(squareId: string, payload: IGameSquare) {
+            this.squares = this.squares.map(s => {
+                if (s.id === squareId) {
+                    return payload
+                } else {
+                    return s
+                }
+            })
+        },
         setSelectedSquares(payload: IGameSquare[]) {
             this.selectedSquares = payload 
         },

@@ -5,7 +5,8 @@
             ${isSelected && 'selected'}
             ${isAdjacentSquare && 'adjacent'}
         `"
-        @click="setSelectedChallenger"
+        :style="`background-color: ${backgroundColor}`"
+        @click="togglePlayerModal"
     >
         <p
             v-if="squareStore.displayType === IBoardDisplay.categories"
@@ -21,14 +22,50 @@
             {{ getPlayer(squareData.playerId)?.name }}
         </p>
     </div>
+    <ModalPopup
+        class="popup"
+        v-if="playerModal"
+    >
+        <div>
+
+            <select @change="updateSquare">
+                <option
+                    v-for="player in playerStore.players"
+                    :key="player.id"
+                    :selected="player.id === squareData.playerId"
+                    :value="player.id"
+                >
+                    {{ player.name }}
+                </option>
+            </select>
+            <p>
+                {{ getCategory(squareData.categoryId)?.name }}
+            </p>
+            <footer>
+                <button
+                    @click="togglePlayerModal"
+                >
+                    Cancel
+                </button>
+                <button
+                    @click="setSelectedChallenger"
+                >
+                    Select
+                </button>
+            </footer>
+        </div>
+    </ModalPopup>
 </template>
 <script lang="ts" setup>
 import { IBoardDisplay, type IGameSquare } from '@/types';
 import { usePlayerStore } from '@/stores/playerStore'
 import { useGameSquareStore } from '@/stores/gameSquareStore'
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useCategoryStore } from '@/stores/categoryStore';
+import ModalPopup from './modal-popup.vue';
+import { saveGame } from '@/services/game';
+import { useRoute } from 'vue-router';
 
 const playerStore = usePlayerStore()
 const squareStore = useGameSquareStore()
@@ -38,6 +75,8 @@ const { getSquare } = storeToRefs(squareStore)
 const { getPlayer } = storeToRefs(playerStore)
 const { getCategory } = storeToRefs(categoryStore)
 
+const route = useRoute()
+
 const props = defineProps({
     squareData: {
         type: Object as () => IGameSquare,
@@ -45,15 +84,17 @@ const props = defineProps({
     }
 })
 
-// const backgroundColor = computed(() => {
-//     if (squareStore.displayType === IBoardDisplay.territories) {
-//         return getPlayer.value(props.squareData.playerId)?.color
-//     }
-//     if (isSelected.value) {
-//         return getPlayer.value(playerStore.selectedPlayer)?.color
-//     }
-//     return ''
-// })
+const playerModal = ref(false)
+
+const backgroundColor = computed(() => {
+    if (squareStore.displayType === IBoardDisplay.territories) {
+        return getPlayer.value(props.squareData.playerId)?.color
+    }
+    // if (isSelected.value) {
+    //     return getPlayer.value(playerStore.selectedPlayer)?.color
+    // }
+    return ''
+})
 
 const isSelected = computed(() => {
     return playerStore.selectedPlayer === props.squareData.playerId
@@ -94,6 +135,33 @@ const setSelectedChallenger = () => {
     } else {
         playerStore.setSelectedPlayer(props.squareData.playerId)
     }
+    togglePlayerModal()
+}
+
+const updateSquare = async (e: Event) => {
+    const target = e.target as HTMLSelectElement
+    try {
+        const player = playerStore.getPlayer(target!.value)
+        if (!player) {
+            throw new Error("player not found")
+        }
+        // update square locally
+        squareStore.setSquare(props.squareData.id, {
+            ...props.squareData,
+            playerId: player.id,
+            categoryId: player.catId,
+        })
+        // update board in db
+        await saveGame(route.params.id as string, {
+            board: squareStore.squares
+        })
+    } catch (e) {
+        console.error(e)
+    }
+}
+
+const togglePlayerModal = () => {
+    playerModal.value = !playerModal.value
 }
 
 </script>
@@ -123,6 +191,16 @@ const setSelectedChallenger = () => {
     }
     &.adjacent {
         background-color: #dc2626;
+    }
+}
+
+.popup {
+    footer {
+        display: flex;
+        gap: 0.5rem;
+        button {
+            width: 100%;
+        }
     }
 }
 </style>

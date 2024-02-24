@@ -1,6 +1,6 @@
 <template>
     <div class="player-board">
-        <div class="players">
+        <div class="ui-card players">
             <h2>Players</h2>
             <div
                 v-for="player in players"
@@ -46,10 +46,6 @@ const activePlayers: ComputedRef<string[]> = computed(() => {
     margin: 1rem;
     min-width: 250px;
     .players {
-        background-color: var(--primary-color-light);
-        box-shadow: 0 6px 12px rgba(0,0,0,0.1);
-        padding: 2rem;
-        border-radius: 4px;
         h2 {
             margin-top: 0;
         }

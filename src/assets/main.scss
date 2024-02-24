@@ -118,3 +118,10 @@ ul {
   list-style-type: none;
   padding: 0;
 }
+
+.ui-card {
+  background-color: var(--primary-color-light);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+  padding: 2rem;
+  border-radius: 4px;
+}

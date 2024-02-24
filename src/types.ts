@@ -35,13 +35,15 @@ export enum IGameViews {
     battle = 'battle',
 }
 
+export interface IGameSaveState {
+    board: IGameSquare[],
+}
+
 export interface IGame {
     id: string,
     name: string,
     owner_id: string,
-    save?: {
-        board: IGameSquare[],
-    }
+    save?: IGameSaveState,
 }
 
 export interface IQuestion {

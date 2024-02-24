@@ -1,6 +1,7 @@
 <template>
     <div class="controller">
         <nav
+            class="ui-card"
             v-if="props.gameView === IGameViews.floor"
         >
             <button
@@ -67,7 +68,7 @@
                 </button>
             </div>
         </nav>
-        <nav v-if="props.gameView === IGameViews.battle">
+        <nav class="ui-card" v-if="props.gameView === IGameViews.battle">
             <button
                 class="w-100"
                 @click="onCancelBattle"

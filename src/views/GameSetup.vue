@@ -35,10 +35,11 @@
 </template>
 <script setup lang="ts">
 import { auth, db } from '@/services/firebase';
+import { saveGame } from '@/services/game';
 import { useCategoryStore } from '@/stores/categoryStore';
 import type { ICategory, IGameSquare, IPlayer } from '@/types';
 import { shuffle } from '@/utils/shuffle';
-import { collection, doc, getDocs, query, updateDoc } from 'firebase/firestore';
+import { collection, getDocs, query } from 'firebase/firestore';
 import { onMounted, ref, type Ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -109,7 +110,7 @@ const getPlayerCategory = (catId: string): string => {
     }
 }
 
-const createGame = () => {
+const createGame = async() => {
     try {
         // Step 1: shuffle players
         // Step 2: create square data based on players and their categories
@@ -131,12 +132,8 @@ const createGame = () => {
             }
         })
 
-        const gameRef = doc(db, "games", route.params.id as string)
-
-        updateDoc(gameRef, {
-            save: {
-                board: gameSquareData,
-            }
+        await saveGame(route.params.id as string, {
+            board: gameSquareData
         })
 
         router.push({ name: 'game-start', params: { id: route.params.id }})
