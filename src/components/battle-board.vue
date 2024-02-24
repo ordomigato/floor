@@ -3,7 +3,7 @@
         <div v-if="questions.length && !finished" :class="`image-container ${showAnswer ? 'flipped' : ''}`">
             <div class="image-card">
                 <div class="image-front">
-                    <img v-if="started" :src="questions[questionIndex].image" />
+                    <img v-if="started" :src="questions[questionIndex].imgUrl" />
                     <h2 v-else>Ready?</h2>
                 </div>
                 <div class="image-back">
@@ -51,17 +51,14 @@
 </template>
 <script setup lang="ts">
 import { db } from '@/services/firebase';
+import { getQuestions } from '@/services/game';
+import { useCategoryStore } from '@/stores/categoryStore';
 import { useGameSquareStore } from '@/stores/gameSquareStore';
 import { usePlayerStore } from '@/stores/playerStore';
-import type { IGameSquare } from '@/types';
+import type { IGameSquare, IQuestion } from '@/types';
 import { doc, updateDoc } from 'firebase/firestore';
-import { computed, onMounted, ref, type Ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref, type Ref } from 'vue';
 import { useRoute } from 'vue-router';
-
-interface IQuestion {
-    image: string
-    answer: string
-}
 
 enum Controls {
     correct = 'ArrowRight',
@@ -80,29 +77,11 @@ enum TimerState {
 
 type Players = 'playerA' | 'playerB'
 
-const q = [
-    {
-        image: 'https://people.com/thmb/CaGmnUJZ5CTru3-l9fRiKKkDTSM=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc():focal(599x0:601x2)/bob-saget-06-cd12af74624741a5bc8c8a061b180d33.jpg',
-        answer: 'Full House'
-    },
-    {
-        image: 'https://akns-images.eonline.com/eol_images/Entire_Site/20151019/rs_1024x759-151119101713-1024-married-the-children-cast.jpg?fit=around%7C1024:759&output-quality=90&crop=1024:759;center,top',
-        answer: 'Married With Childen'
-    },
-    {
-        image: 'https://cdn.abcotvs.com/dip/images/977594_091015-cc-Fresh-Prince-Thumb.jpg  ',
-        answer: 'Fresh Prince'
-    },
-    {
-        image: 'https://www.usmagazine.com/wp-content/uploads/2021/05/3rd-Rock-From-Sun-Cast-Where-Are-They-Now-Landing.jpg?quality=78&strip=all',
-        answer: '3rd Rock'
-    },
-] as IQuestion[]
-
 const defaultTime = 1000 * 30
 
 const playerStore = usePlayerStore()
 const squareStore = useGameSquareStore()
+const categoryStore = useCategoryStore()
 const route = useRoute()
 
 const emit = defineEmits(['complete'])
@@ -319,10 +298,24 @@ const keyController = (e: KeyboardEvent) => {
     }
 }
 
-onMounted(() => {
+const handleGetQuestions = async () => {
+    try {
+        const q = await getQuestions(route.params.id as string, categoryStore.selectedCategory)
+        console.log(q)
+        questions.value = q
+    } catch (e) {
+        console.error(e)
+    }
+}
+
+onMounted(async () => {
     pauseTimer()
-    questions.value = q
-    document.addEventListener( "keydown", keyController );
+    await handleGetQuestions()
+    document.addEventListener("keydown", keyController);
+})
+
+onUnmounted(() => {
+    document.removeEventListener("keydown", keyController);
 })
 </script>
 <style lang="scss" scoped>
