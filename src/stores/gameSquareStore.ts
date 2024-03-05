@@ -7,7 +7,8 @@ export const useGameSquareStore = defineStore({
         squares: [] as IGameSquare[],
         selectedSquares: [] as IGameSquare[],
         displayType: IBoardDisplay.categories as IBoardDisplay,
-        showAdjaceSquares: false,
+        showAdjecentSquares: true,
+        adjacentSquares: new Set()
     }),
     getters: {
         getSquare: (state) => {
@@ -28,13 +29,31 @@ export const useGameSquareStore = defineStore({
             })
         },
         setSelectedSquares(payload: IGameSquare[]) {
-            this.selectedSquares = payload 
+            this.selectedSquares = payload
+            this.setAdjacentSquares(payload)
+        },
+        setAdjacentSquares(payload: IGameSquare[]) {
+            this.clearAdjacentSquares()
+            payload.map(s => {
+                const top = `${s.row - 1}-${s.col}`
+                const bottom = `${s.row + 1}-${s.col}`
+                const left = `${s.row}-${s.col - 1}`
+                const right = `${s.row}-${s.col + 1}`
+
+                this.adjacentSquares.add(top)
+                this.adjacentSquares.add(bottom)
+                this.adjacentSquares.add(left)
+                this.adjacentSquares.add(right)
+            })
+        },
+        clearAdjacentSquares() {
+            this.adjacentSquares = new Set()
         },
         setDisplayType(payload: IBoardDisplay) {
             this.displayType = payload
         },
-        setShowAdjaceSquares(payload: boolean) {
-            this.showAdjaceSquares = payload
+        setShowAdjacentSquares(payload: boolean) {
+            this.showAdjecentSquares = payload
         }
     }
 })

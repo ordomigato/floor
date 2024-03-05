@@ -5,6 +5,8 @@
             ${isSelected && 'selected'}
             ${isAdjacentSquare && 'adjacent'}
         `"
+        :data-row="squareData.row"
+        :data-col="squareData.col"
         :style="`background-color: ${backgroundColor}`"
         @click="togglePlayerModal"
     >
@@ -60,7 +62,7 @@
 import { IBoardDisplay, type IGameSquare } from '@/types';
 import { usePlayerStore } from '@/stores/playerStore'
 import { useGameSquareStore } from '@/stores/gameSquareStore'
-import { computed, ref } from 'vue';
+import { computed, ref, type ComputedRef } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useCategoryStore } from '@/stores/categoryStore';
 import ModalPopup from './modal-popup.vue';
@@ -71,7 +73,6 @@ const playerStore = usePlayerStore()
 const squareStore = useGameSquareStore()
 const categoryStore = useCategoryStore()
 
-const { getSquare } = storeToRefs(squareStore)
 const { getPlayer } = storeToRefs(playerStore)
 const { getCategory } = storeToRefs(categoryStore)
 
@@ -100,33 +101,13 @@ const isSelected = computed(() => {
     return playerStore.selectedPlayer === props.squareData.playerId
 })
 
-const isAdjacentSquare = computed(() => {
-    if (!squareStore.showAdjaceSquares) {
-        return false;
+const isAdjacentSquare: ComputedRef<boolean> = computed(() => {
+    if (squareStore.showAdjecentSquares) {
+        return squareStore.adjacentSquares.has(props.squareData.id)
+    } else {
+        return false
     }
-    if (!isSelected.value) {
-        const adjacentSquares = getAdjacentSquares(
-            props.squareData.row,
-            props.squareData.col
-        )
-        return adjacentSquares.some(as => squareStore.selectedSquares.some(ss => ss.id === as))
-    }
-    return false;
 })
-
-const getAdjacentSquares = (row: number, col: number): (string)[] => {
-    const adjacentSquares: Set<string | undefined> = new Set()
-    // plus 1 to row
-    adjacentSquares.add(getSquare.value(`${row + 1}-${col}`)?.id)
-    // minus 1 to row
-    adjacentSquares.add(getSquare.value(`${row - 1}-${col}`)?.id)
-    // plus 1 to col
-    adjacentSquares.add(getSquare.value(`${row}-${col + 1}`)?.id)
-    // plus 1 to row
-    adjacentSquares.add(getSquare.value(`${row}-${col - 1}`)?.id)
-    const filteredData = [...adjacentSquares].filter( s => s ) as string[]
-    return filteredData;
-}
 
 const setSelectedChallenger = () => {
     if (playerStore.selectedPlayer) {
@@ -134,6 +115,7 @@ const setSelectedChallenger = () => {
         categoryStore.setSelectedCategory(props.squareData.categoryId)
     } else {
         playerStore.setSelectedPlayer(props.squareData.playerId)
+        squareStore.setShowAdjacentSquares(true)
     }
     togglePlayerModal()
 }
@@ -189,7 +171,7 @@ const togglePlayerModal = () => {
         color: #333;
         transition: all 0.1s linear;
     }
-    &.adjacent {
+    &.adjacent:not(.selected) {
         background-color: #dc2626;
     }
 }

@@ -2,7 +2,7 @@
     <div class="controller">
         <nav
             class="ui-card"
-            v-if="props.gameView === IGameViews.floor"
+            v-if="props.gameView === 'floor'"
         >
             <button
                 class="w-100"
@@ -17,7 +17,7 @@
                         name="board-display"
                         type="radio"
                         v-model="gameSquareStore.displayType"
-                        :value="IBoardDisplay.categories"
+                        value="categories"
                     />
                     Categories
                 </label>
@@ -26,7 +26,7 @@
                         name="board-display"
                         type="radio"
                         v-model="gameSquareStore.displayType"
-                        :value="IBoardDisplay.players"
+                        value="players"
                     />
                     Player Names
                 </label>
@@ -35,7 +35,7 @@
                         name="board-display"
                         type="radio"
                         v-model="gameSquareStore.displayType"
-                        :value="IBoardDisplay.territories"
+                        value="territories"
                     />
                     Territories
                 </label>
@@ -68,7 +68,7 @@
                 </button>
             </div>
         </nav>
-        <nav class="ui-card" v-if="props.gameView === IGameViews.battle">
+        <nav class="ui-card" v-if="props.gameView === 'battle'">
             <button
                 class="w-100"
                 @click="onCancelBattle"
@@ -81,7 +81,7 @@
 <script setup lang="ts">
 import { usePlayerStore } from '@/stores/playerStore'
 import { useGameSquareStore } from '@/stores/gameSquareStore';
-import { IBoardDisplay, type IBattleData, IGameViews } from '@/types';
+import type { IBattleData, IGameViews } from '@/types';
 import { storeToRefs } from 'pinia';
 import { useCategoryStore } from '@/stores/categoryStore';
 
@@ -113,16 +113,40 @@ const selectPlayerRandomly = () => {
     onClearBattleData()
     const shuffle = 20
     let shuffleNumber = 0
+
+    // map of players ids and number of instances
+    const playerMap: Map<string, number> = new Map()
+
+    gameSquareStore.squares.map(s => {
+        const val = playerMap.get(s.playerId)
+        playerMap.set(s.playerId, val ? val + 1 : 1)
+    })
+
+    let playerPoolSet: Set<string> = new Set()
+    
+    playerMap.forEach((val, key) => {
+        if (val === 1) {
+            playerPoolSet.add(key)
+        }
+    })
+
+    if (playerPoolSet.size === 0) {
+        playerMap.forEach((val, key) => {
+            playerPoolSet.add(key)
+        })
+    }
+
+    const playerPool = [...playerPoolSet]
     while (shuffleNumber < shuffle) {
         shuffleNumber++
         setTimeout(() => {
-            const max = playerStore.players.length
+            const max = playerPool.length
             const index = Math.floor(Math.random() * max)
-            playerStore.setSelectedPlayer(playerStore.players[index].id)
+            playerStore.setSelectedPlayer(playerPool[index])
         }, (150 * shuffleNumber))
     }
     setTimeout(() => {
-        gameSquareStore.setShowAdjaceSquares(true)
+        gameSquareStore.setShowAdjacentSquares(true)
 
     }, 170 * shuffle)
     // console.log('')
@@ -137,7 +161,7 @@ const onCancelBattle = () => {
 }
 
 const onClearBattleData = () => {
-    gameSquareStore.setShowAdjaceSquares(false)
+    gameSquareStore.setShowAdjacentSquares(false)
     playerStore.setSelectedPlayer('')
     playerStore.setSelectedChallenger('')
     categoryStore.setSelectedCategory('')

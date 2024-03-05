@@ -121,7 +121,7 @@ const createGame = async() => {
         const shuffledPlayers = shuffle(players.value)
 
         const gameSquareData: IGameSquare[] = shuffledPlayers.map((p, i) => {
-            const col = (i % sqrt) + 1
+            const col = Math.floor((i % sqrt)) + 1
             const row = (Math.floor(i/sqrt)) + 1
             return {
                 id: `${row}-${col}`,
