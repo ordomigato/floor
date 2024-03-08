@@ -62,6 +62,13 @@
             <div class="mt-auto">
                 <button
                     class="w-100"
+                    v-if="gameSquareStore.squares.length && isShuffleable"
+                    @click="shufflePlayers"
+                >
+                    Shuffle Players
+                </button>
+                <button
+                    class="w-100"
                     @click="$router.push({name: 'games'})"
                 >
                     Quit Game
@@ -81,13 +88,18 @@
 <script setup lang="ts">
 import { usePlayerStore } from '@/stores/playerStore'
 import { useGameSquareStore } from '@/stores/gameSquareStore';
-import type { IBattleData, IGameViews } from '@/types';
+import type { IBattleData, IGameSquare, IGameViews } from '@/types';
 import { storeToRefs } from 'pinia';
 import { useCategoryStore } from '@/stores/categoryStore';
+import { shuffle } from '@/utils/shuffle';
+import { saveGame } from '@/services/game';
+import { useRoute } from 'vue-router';
+import { computed, type ComputedRef } from 'vue';
 
 const playerStore = usePlayerStore()
 const gameSquareStore = useGameSquareStore()
 const categoryStore = useCategoryStore()
+const route = useRoute()
 
 const { getPlayer } = storeToRefs(playerStore)
 const { getCategory } = storeToRefs(categoryStore)
@@ -108,6 +120,45 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['confirmChallenge', 'cancelBattle'])
+
+const isShuffleable: ComputedRef<boolean> = computed(() => {
+    // if any square has the same category as another, the game has already started.
+    const categories = new Set()
+    let returnedValue = true
+    gameSquareStore.squares.forEach(s => {
+        if (categories.has(s.categoryId)) {
+            returnedValue = false
+        } else {
+            categories.add(s.categoryId)
+        }
+    })
+    return returnedValue
+})
+
+const shufflePlayers = async () => {
+    const playerCount = playerStore.players.length
+    const sqrt = Math.sqrt(playerCount)
+
+    const shuffledPlayers = shuffle(playerStore.players)
+
+    const gameSquareData: IGameSquare[] = shuffledPlayers.map((p, i) => {
+        const col = Math.floor((i % sqrt)) + 1
+        const row = (Math.floor(i/sqrt)) + 1
+        return {
+            id: `${row}-${col}`,
+            row: row,
+            col: col,
+            playerId: p.id,
+            categoryId: p.catId,
+        }
+    })
+
+    await saveGame(route.params.id as string, {
+        board: gameSquareData
+    })
+
+    gameSquareStore.setSquares(gameSquareData)
+}
 
 const selectPlayerRandomly = () => {
     onClearBattleData()
