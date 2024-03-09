@@ -46,6 +46,8 @@ const activePlayers: ComputedRef<string[]> = computed(() => {
     margin: 1rem;
     min-width: 250px;
     max-height: 100vh;
+    overflow: hidden;
+    overflow-y: scroll;
     .players {
         h2 {
             margin-top: 0;
