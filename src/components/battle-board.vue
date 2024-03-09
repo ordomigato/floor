@@ -4,7 +4,10 @@
             <div class="image-card">
                 <div class="image-front">
                     <img v-if="started" :src="questions[questionIndex].imgUrl" />
-                    <h2 v-else>Ready?</h2>
+                    <div v-else>
+                        <h2>Ready?</h2>
+                        <p>Questions: {{ questions.length }}</p>
+                    </div>
                 </div>
                 <div class="image-back">
                     <p v-if="showAnswer">{{questions[questionIndex].answer}}</p>

@@ -223,6 +223,7 @@ const onClearBattleData = () => {
 .controller {
     padding: 1rem;
     min-width: 250px;
+    max-height: 100vh;
     h3 {
         margin-bottom: 0.5rem;
     }
