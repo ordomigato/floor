@@ -277,7 +277,12 @@ const submitWinner = () => {
 }
 
 const keyController = (e: KeyboardEvent) => {
-    switch (e.key.toLowerCase()) {
+    let key = e.key.toLowerCase()
+
+    if (e.key === Controls.skip || e.key === Controls.correct) {
+        key = e.key
+    }
+    switch (key) {
     case Controls.correct:
         // Correct!
         handleCorrect()
