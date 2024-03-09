@@ -45,6 +45,7 @@ const activePlayers: ComputedRef<string[]> = computed(() => {
 .player-board {
     margin: 1rem;
     min-width: 250px;
+    max-height: 100vh;
     .players {
         h2 {
             margin-top: 0;
