@@ -50,6 +50,7 @@ export interface IQuestion {
     id: string,
     answer: string,
     imgUrl: string,
+    img?: HTMLImageElement,
 }
 
 export interface IAddQuestionRequest {

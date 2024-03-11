@@ -3,7 +3,7 @@
         <div v-if="questions.length && !finished" :class="`image-container ${showAnswer ? 'flipped' : ''}`">
             <div class="image-card">
                 <div class="image-front">
-                    <img v-if="started" :src="questions[questionIndex].imgUrl" />
+                    <img v-if="started" :src="questions[questionIndex].img?.src" />
                     <div v-else>
                         <h2>Ready?</h2>
                         <p>Questions: {{ questions.length }}</p>
@@ -97,8 +97,9 @@ const skipped = ref(false)
 
 const millisToMinutesAndSeconds = (millis: number) => {
   var minutes = Math.floor(millis / 60000);
-  var seconds = parseInt(((millis % 60000) / 1000).toFixed(0));
-  return minutes + ":" + (seconds < 10 ? '0' : '') + seconds;
+  var seconds = (millis / 1000 | 0) % 60
+  const mil = (millis / 10 | 0).toString().slice(-2)
+  return minutes + ":" + (seconds < 10 ? '0' : '') + seconds + ':' + mil;
 }
 
 // 0 is player 1, 1 is player 2
@@ -119,6 +120,8 @@ const playerBComputedTime = computed(() => {
 })
 
 let timer: NodeJS.Timeout | null = null
+let timerLastUpdate: Ref<number | null> = ref(null)
+
 const timerState: Ref<TimerState> = ref(TimerState.stopped)
 
 const startTimer = () => {
@@ -133,13 +136,19 @@ const startTimer = () => {
     if (!selectedPlayer.value) {
         return
     }
+    timerLastUpdate.value = null
+    console.log(playerATime.value)
     timer = setInterval(() => {
+        const now = Date.now()
+        const dt = timerLastUpdate.value ? now - timerLastUpdate.value : 0
+        console.log(dt)
+        timerLastUpdate.value = now;
         if (selectedPlayer.value === 'playerA') {
             if (playerATime.value <= 0) {
                 handleComplete()
                 return
             } else if (playerATime.value > 0) {
-                playerATime.value = playerATime.value - 100
+                playerATime.value = playerATime.value - dt
             }
         }
         if (selectedPlayer.value === 'playerB') {
@@ -147,10 +156,10 @@ const startTimer = () => {
                 handleComplete()
                 return
             } else if (playerBTime.value > 0) {
-                playerBTime.value = playerBTime.value - 100
+                playerBTime.value = playerBTime.value - dt
             }
         }
-    }, 100)
+    }, 50)
 }
 
 const pauseTimer = () => {
@@ -310,7 +319,14 @@ const handleGetQuestions = async () => {
     try {
         const q = await getQuestions(route.params.id as string, categoryStore.selectedCategory)
         console.log(q)
-        questions.value = q
+        questions.value = q.map(q => {
+            const img = new Image()
+            img.src = q.imgUrl
+            return {
+                ...q,
+                img,
+            }
+        })
     } catch (e) {
         console.error(e)
     }
