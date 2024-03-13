@@ -80,7 +80,7 @@ enum TimerState {
 
 type Players = 'playerA' | 'playerB'
 
-const defaultTime = 1000 * 30
+const defaultTime = 1000 * 45
 
 const playerStore = usePlayerStore()
 const squareStore = useGameSquareStore()
@@ -250,10 +250,11 @@ const submitWinner = () => {
             throw new Error('loser does not exist')
         }
         const winnerPlayer = playerStore.getPlayer(winner.value)
+        const loserPlayer = playerStore.getPlayer(loser.value)
         if (!winnerPlayer) {
             throw new Error('winner player data not found')
         }
-        if (!winnerPlayer.catId) {
+        if (!loserPlayer) {
             throw new Error("winner's category could not be found")
         }
         const newSquareData = squareStore.squares.map((s: IGameSquare) => {
@@ -261,7 +262,12 @@ const submitWinner = () => {
                 return {
                     ...s,
                     playerId: winnerPlayer.id,
-                    categoryId: winnerPlayer.catId
+                    categoryId: loserPlayer.catId
+                }
+            } else if (s.playerId === winner.value) {
+                return {
+                    ...s,
+                    categoryId: loserPlayer.catId
                 }
             } else {
                 return s
