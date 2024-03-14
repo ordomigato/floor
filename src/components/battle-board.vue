@@ -80,7 +80,7 @@ enum TimerState {
 
 type Players = 'playerA' | 'playerB'
 
-const defaultTime = 1000 * 45
+const defaultTime = 1000 * 5
 
 const playerStore = usePlayerStore()
 const squareStore = useGameSquareStore()
@@ -141,22 +141,31 @@ const startTimer = () => {
     timer = setInterval(() => {
         const now = Date.now()
         const dt = timerLastUpdate.value ? now - timerLastUpdate.value : 0
-        console.log(dt)
         timerLastUpdate.value = now;
         if (selectedPlayer.value === 'playerA') {
+            const newTime = playerATime.value - dt
             if (playerATime.value <= 0) {
                 handleComplete()
                 return
             } else if (playerATime.value > 0) {
-                playerATime.value = playerATime.value - dt
+                if (newTime <= 0) {
+                    playerATime.value = 0
+                } else {
+                    playerATime.value = newTime
+                }
             }
         }
         if (selectedPlayer.value === 'playerB') {
+            const newTime = playerBTime.value - dt
             if (playerBTime.value <= 0) {
                 handleComplete()
                 return
             } else if (playerBTime.value > 0) {
-                playerBTime.value = playerBTime.value - dt
+                if (newTime <= 0) {
+                    playerBTime.value = 0
+                } else {
+                    playerBTime.value = newTime
+                }
             }
         }
     }, 50)
