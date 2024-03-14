@@ -257,17 +257,18 @@ const submitWinner = () => {
         if (!loserPlayer) {
             throw new Error("winner's category could not be found")
         }
+        const unplayedCatId = categoryStore.selectedCategory === winnerPlayer.catId ? loserPlayer.catId : winnerPlayer.catId
         const newSquareData = squareStore.squares.map((s: IGameSquare) => {
             if (s.playerId === loser.value) {
                 return {
                     ...s,
                     playerId: winnerPlayer.id,
-                    categoryId: loserPlayer.catId
+                    categoryId: unplayedCatId
                 }
             } else if (s.playerId === winner.value) {
                 return {
                     ...s,
-                    categoryId: loserPlayer.catId
+                    categoryId: unplayedCatId
                 }
             } else {
                 return s
