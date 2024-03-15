@@ -80,7 +80,7 @@ enum TimerState {
 
 type Players = 'playerA' | 'playerB'
 
-const defaultTime = 1000 * 5
+const defaultTime = 1000 * 45
 
 const playerStore = usePlayerStore()
 const squareStore = useGameSquareStore()
