@@ -30,7 +30,7 @@
     >
         <div>
 
-            <select @change="updateSquare">
+            <select @change="updateSquaresPlayer">
                 <option
                     v-for="player in playerStore.players"
                     :key="player.id"
@@ -40,9 +40,20 @@
                     {{ player.name }}
                 </option>
             </select>
-            <p>
-                {{ getCategory(squareData.categoryId)?.name }}
-            </p>
+            <br />
+            <br />
+            <select @change="updateSquaresCategory">
+                <option
+                    v-for="cat in categoryStore.categories"
+                    :key="cat.id"
+                    :selected="cat.id === squareData.categoryId"
+                    :value="cat.id"
+                >
+                    {{ cat.name }}
+                </option>
+            </select>
+            <br />
+            <br />
             <footer>
                 <button
                     @click="togglePlayerModal"
@@ -120,7 +131,7 @@ const setSelectedChallenger = () => {
     togglePlayerModal()
 }
 
-const updateSquare = async (e: Event) => {
+const updateSquaresPlayer = async (e: Event) => {
     const target = e.target as HTMLSelectElement
     try {
         const player = playerStore.getPlayer(target!.value)
@@ -132,6 +143,27 @@ const updateSquare = async (e: Event) => {
             ...props.squareData,
             playerId: player.id,
             categoryId: player.catId,
+        })
+        // update board in db
+        await saveGame(route.params.id as string, {
+            board: squareStore.squares
+        })
+    } catch (e) {
+        console.error(e)
+    }
+}
+
+const updateSquaresCategory = async (e: Event) => {
+    const target = e.target as HTMLSelectElement
+    try {
+        const category = categoryStore.getCategory(target!.value)
+        if (!category) {
+            throw new Error("player not found")
+        }
+        // update square locally
+        squareStore.setSquare(props.squareData.id, {
+            ...props.squareData,
+            categoryId: category.id,
         })
         // update board in db
         await saveGame(route.params.id as string, {
