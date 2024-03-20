@@ -266,18 +266,22 @@ const submitWinner = () => {
         if (!loserPlayer) {
             throw new Error("winner's category could not be found")
         }
-        const unplayedCatId = categoryStore.selectedCategory === winnerPlayer.catId ? loserPlayer.catId : winnerPlayer.catId
+        // the selected player is player A, and so their category will be next.
+        const nextCat = squareStore.squares.find(s => s.playerId === playerStore.selectedPlayer)?.categoryId
+        if (!nextCat) {
+            throw new Error('next category not found')
+        }
         const newSquareData = squareStore.squares.map((s: IGameSquare) => {
             if (s.playerId === loser.value) {
                 return {
                     ...s,
                     playerId: winnerPlayer.id,
-                    categoryId: unplayedCatId
+                    categoryId: nextCat
                 }
             } else if (s.playerId === winner.value) {
                 return {
                     ...s,
-                    categoryId: unplayedCatId
+                    categoryId: nextCat
                 }
             } else {
                 return s
