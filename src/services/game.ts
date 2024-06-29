@@ -2,7 +2,7 @@ import { addDoc, collection, doc, getDoc, getDocs, query, setDoc, deleteDoc, upd
 import { ref as fbref, getDownloadURL, uploadBytesResumable } from 'firebase/storage';
 import { db, storage } from "./firebase";
 import { v4 as uuidv4 } from 'uuid';
-import type { IAddQuestionRequest, ICategory, IGameSaveState, IQuestion, IUpdateCategoryRequest } from "@/types";
+import type { IAddQuestionRequest, ICategory, IGameSaveState, IQuestion } from "@/types";
 
 
 //////////
@@ -31,6 +31,14 @@ export async function deleteGame(gameId: string) {
 ///////////////
 // Questions //
 ///////////////
+
+export async function updateQuestionOrder(gameId: string, categoryId: string, payload: string[]) {
+    const catRef = doc(db, "games", gameId, "categories", categoryId)
+
+    updateDoc(catRef, {
+        order: payload
+    })
+}
 
 export async function getQuestions(gameId: string, categoryId: string): Promise<IQuestion[]> {
     const catCollection = collection(db, "games", gameId, "categories", categoryId, "questions")
@@ -81,15 +89,12 @@ export async function getCategory(gameId: string, categoryId: string): Promise<I
     }
 }
 
-export async function updateCategory(gameId: string, categoryId: string, payload: IUpdateCategoryRequest): Promise<ICategory> {
+export async function updateCategoryName(gameId: string, categoryId: string, name: string) {
     const catRef = doc(db, "games", gameId, "categories", categoryId)
 
-    await setDoc(catRef, payload)
-
-    return {
-        id: categoryId,
-        ...payload,
-    }
+    await updateDoc(catRef, {
+        name: name
+    })
 }
 
 //////////

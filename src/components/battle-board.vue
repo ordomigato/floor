@@ -62,6 +62,7 @@ import type { IGameSquare, IQuestion } from '@/types';
 import { doc, updateDoc } from 'firebase/firestore';
 import { computed, onMounted, onUnmounted, ref, type Ref } from 'vue';
 import { useRoute } from 'vue-router';
+import { orderQuestions } from '@/utils/order-questions'
 
 enum Controls {
     correct = 'ArrowRight',
@@ -338,14 +339,14 @@ const keyController = (e: KeyboardEvent) => {
 const handleGetQuestions = async () => {
     try {
         const q = await getQuestions(route.params.id as string, categoryStore.selectedCategory)
-        console.log(q)
-        questions.value = q.map(q => {
+        const order = categoryStore.getCategory(categoryStore.selectedCategory)?.order || []
+        questions.value = orderQuestions(order, q).map(q => {
             const img = new Image()
             img.src = q.imgUrl
             return {
                 ...q,
                 img,
-            }
+            } 
         })
     } catch (e) {
         console.error(e)

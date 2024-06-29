@@ -9,6 +9,7 @@ export interface IGameSquare {
 export interface ICategory {
     id: string,
     name: string,
+    order: string[],
 }
 
 export interface IPlayer {
@@ -56,8 +57,4 @@ export interface IQuestion {
 export interface IAddQuestionRequest {
     answer: string,
     imgUrl: string,
-}
-
-export interface IUpdateCategoryRequest {
-    name: string,
 }

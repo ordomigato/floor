@@ -9,7 +9,7 @@
             />
         </label>
         <button
-            @click="handleUpdateCategory"
+            @click="handleUpdateCategoryName"
             :disabled="catName === props.category.name"
         >
             Save
@@ -17,7 +17,7 @@
     </div>
 </template>
 <script setup lang="ts">
-import { updateCategory } from '@/services/game';
+import { updateCategoryName } from '@/services/game';
 import type { ICategory } from '@/types';
 import { ref, type PropType, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
@@ -35,7 +35,7 @@ const emit = defineEmits(['onUpdate'])
 
 const catName = ref('')
 
-const handleUpdateCategory = async () => {
+const handleUpdateCategoryName = async () => {
     try {
         if (!props.category.name) {
             throw new Error('Category name cannot be blank')
@@ -43,12 +43,10 @@ const handleUpdateCategory = async () => {
 
         const newName = catName.value
 
-        await updateCategory(
+        await updateCategoryName(
             route.params.id as string,
             route.params.catId as string,
-            {
-                name: newName
-            }
+            newName
         )
 
         emit('onUpdate', {

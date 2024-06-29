@@ -16,9 +16,11 @@
         </div>
         <div class="card">
             <QuestionsTable
-                :questions="questions"
+                v-if="category"
+                :questions="orderedQuestions"
                 @onAddQuestion="onAddQuestion"
                 @onDeleteQuestion="onDeleteQuestion"
+                @onUpdateOrder="onUpdateOrder"
             />
         </div>
         <div class="card">
@@ -35,8 +37,9 @@ import { auth, db } from '@/services/firebase';
 import { getCategory, getQuestions } from '@/services/game';
 import type { ICategory, IQuestion } from '@/types';
 import { deleteDoc, doc } from 'firebase/firestore';
-import { onMounted, ref, type Ref } from 'vue';
+import { computed, onMounted, ref, type Ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { orderQuestions } from '@/utils/order-questions';
 
 const route = useRoute()
 const router = useRouter()
@@ -46,6 +49,19 @@ const category: Ref<ICategory | null> = ref(null)
 
 const error: Ref<Error | null> = ref(null)
 const loading = ref(false)
+
+const orderedQuestions = computed(() => {
+    return orderQuestions(category.value?.order || [], questions.value)
+})
+
+const onUpdateOrder = (order: string[]) => {
+    if (category.value) {
+        category.value = {
+            ...category.value,
+            order,
+        }
+    }
+}
 
 const verifyPageData = () => {
     if (!auth.currentUser) {
