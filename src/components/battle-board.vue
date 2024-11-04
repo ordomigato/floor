@@ -29,7 +29,7 @@
             <h2 v-else>It's a Tie!</h2>
         </div>
         <footer>
-            <div class="time-state">
+            <div class="time-state" @click="toggleTimeModal">
                 <p>TIME</p>
                 <p class="state">{{timerState}}</p>
             </div>
@@ -50,6 +50,31 @@
                 </div>
             </div>
         </footer>
+        <ModalPopup v-if="openTimeModal">
+          <div>
+            <div>
+              <p>{{ playerStore.getPlayer(playerStore.selectedPlayer)?.name }}</p>
+              <input
+                type="text"
+                v-model="playerATime"
+              />
+              <p>{{ playerAComputedTime }}</p>
+            </div>
+            <div>
+              <p>{{ playerStore.getPlayer(playerStore.selectedChallenger)?.name }}</p>
+              <input
+                type="text"
+                v-model="playerBTime"
+              />
+              <p>{{ playerBComputedTime }}</p>
+            </div>
+          </div>
+          <div>
+            <button
+              @click="toggleTimeModal"
+            >Complete</button>
+          </div>
+        </ModalPopup>
     </div>
 </template>
 <script setup lang="ts">
@@ -63,6 +88,7 @@ import { doc, updateDoc } from 'firebase/firestore';
 import { computed, onMounted, onUnmounted, ref, type Ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { orderQuestions } from '@/utils/order-questions'
+import ModalPopup from '@/components/modal-popup.vue'
 
 enum Controls {
     correct = 'ArrowRight',
@@ -81,7 +107,7 @@ enum TimerState {
 
 type Players = 'playerA' | 'playerB'
 
-const defaultTime = 1000 * 45
+const defaultTime = 1000 * 60
 
 const playerStore = usePlayerStore()
 const squareStore = useGameSquareStore()
@@ -112,6 +138,8 @@ const winner: Ref<string | null> = ref(null)
 const loser: Ref<string | null> = ref(null)
 const finished = ref(false)
 
+const openTimeModal = ref(false)
+
 const playerAComputedTime = computed(() => {
     return millisToMinutesAndSeconds(playerATime.value)
 })
@@ -119,6 +147,20 @@ const playerAComputedTime = computed(() => {
 const playerBComputedTime = computed(() => {
     return millisToMinutesAndSeconds(playerBTime.value)
 })
+
+// player 0 = a, player 1 = b
+const addTimeBonus = (player: number, timeBonus: number) => {
+  if (player === 0) {
+    playerATime.value = playerATime.value + timeBonus
+  }
+  if (player === 1) {
+    playerBTime.value = playerBTime.value + timeBonus
+  }
+}
+
+const toggleTimeModal = () => {
+  openTimeModal.value = !openTimeModal.value
+}
 
 let timer: NodeJS.Timeout | null = null
 let timerLastUpdate: Ref<number | null> = ref(null)
@@ -467,6 +509,7 @@ onUnmounted(() => {
             width: 150px;
             border-radius: 100px;
             box-shadow: 0 12px 32px rgba(0,0,0,0.2);
+            cursor: pointer;
             .state {
                 font-size: 1rem;
             }
